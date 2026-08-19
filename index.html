@@ -5,42 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DFNS - Daily Fortnite Shop</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,900;1,900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <header class="hero">
-    <div class="logo-wrapper">
+    <div class="logo-box">
       <h1 class="logo">DFNS</h1>
-      <span class="badge">DAILY FORTNITE SHOP</span>
+      <span class="sub-logo">DAILY FORTNITE SHOP</span>
     </div>
-    <div id="status-tag" class="status-tag">Laden...</div>
+    <div id="status-tag" class="status-tag">Winkel data laden...</div>
   </header>
 
-  <div class="container">
-    <section class="toolbar">
-      <input type="text" id="search-input" placeholder="Zoek skin, emote, pickaxe..." autocomplete="off">
-      <div class="filter-group">
+  <div class="main-wrapper">
+    <section class="controls-bar">
+      <div class="search-wrapper">
+        <input type="text" id="search-input" placeholder="Zoek op naam...">
+      </div>
+      <div class="filter-wrapper">
         <button class="filter-btn active" data-type="all">Alles</button>
         <button class="filter-btn" data-type="outfit">Outfits</button>
         <button class="filter-btn" data-type="emote">Emotes</button>
         <button class="filter-btn" data-type="pickaxe">Pickaxes</button>
+        <button class="filter-btn" data-type="wrap">Wraps</button>
       </div>
     </section>
 
     <main id="app">
       <div id="loader" class="loader">
         <div class="spinner"></div>
-        <p>Live Fortnite Shop data binnenhalen...</p>
+        <p>Fortnite Item Shop ophalen...</p>
       </div>
 
       <div id="error-box" class="error-box hidden">
-        <h2>Er ging iets mis</h2>
+        <h2>Kan de shop niet laden</h2>
         <p id="error-msg"></p>
-        <button onclick="loadShop()">Opnieuw Proberen</button>
+        <button onclick="loadShop()">Opnieuw proberen</button>
       </div>
 
-      <div id="shop-container"></div>
+      <div id="shop-container" class="shop-grid"></div>
     </main>
   </div>
 
