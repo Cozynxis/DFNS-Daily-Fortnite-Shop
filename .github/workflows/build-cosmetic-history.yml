@@ -7,6 +7,7 @@ on:
       - "scripts/build-cosmetic-history.mjs"
       - ".github/workflows/build-cosmetic-history.yml"
       - "js/item.js"
+      - "item.html"
   workflow_dispatch:
 
 permissions:
