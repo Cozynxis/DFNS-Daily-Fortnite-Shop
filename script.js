@@ -1,8 +1,5 @@
-// Fallback API's voor het geval één offline is of geblokkeerd wordt
-const API_ENDPOINTS = [
-  'https://fortnite-api.com/v2/shop/br',
-  'https://fortnite-api.com/v2/shop'
-];
+// Actieve endpoint voor de huidige Fortnite API
+const API_URL = 'https://fortnite-api.com/v2/shop';
 
 let shopData = [];
 
@@ -21,57 +18,55 @@ async function loadShop() {
   errorBox.classList.add('hidden');
   container.innerHTML = '';
 
-  let success = false;
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`Server reageerde met status ${res.status}`);
 
-  for (const url of API_ENDPOINTS) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) continue;
-
-      const json = await res.json();
-      if (!json.data) continue;
-
-      shopData = parseFortniteData(json.data);
-      renderGrid(shopData);
-      
-      statusTag.innerText = `Online (${shopData.length} items)`;
-      success = true;
-      break; 
-    } catch (e) {
-      console.warn('API URL mislukt:', url, e);
+    const json = await res.json();
+    if (!json.data || !json.data.entries) {
+      throw new Error('Geen geldige shopdata ontvangen.');
     }
-  }
 
-  loader.classList.add('hidden');
-
-  if (!success) {
+    shopData = parseFortniteData(json.data.entries);
+    renderGrid(shopData);
+    
+    if (statusTag) {
+      statusTag.innerText = `Online (${shopData.length} items)`;
+    }
+  } catch (e) {
+    console.error('API Fout:', e);
     errorBox.classList.remove('hidden');
-    document.getElementById('error-msg').innerText = 
-      'Kan de Fortnite-server niet bereiken. Open je dit via "Live Server" in VS Code? (Rechtstreeks openen van HTML-bestanden blokkeert soms API-aanroepen).';
+    document.getElementById('error-msg').innerText = `Fout bij ophalen: ${e.message}`;
+  } finally {
+    loader.classList.add('hidden');
   }
 }
 
-// Zet complexe API datastructuren om naar een simpel, uniform formaat
-function parseFortniteData(data) {
-  let rawList = [];
-
-  if (Array.isArray(data.entries)) {
-    rawList = data.entries;
-  } else {
-    if (data.featured?.entries) rawList = rawList.concat(data.featured.entries);
-    if (data.daily?.entries) rawList = rawList.concat(data.daily.entries);
-  }
-
-  return rawList.map(entry => {
+// Verwerkt de nieuwe v2/shop datastructuur veilig
+function parseFortniteData(entries) {
+  return entries.map(entry => {
+    // Pak het eerste item uit de entry of bundel
     const item = entry.items?.[0] || entry.tracks?.[0] || {};
     
-    const name = item.name || entry.bundle?.name || 'Unbekend Item';
-    const type = item.type?.value || 'cosmetic';
+    const name = item.name || entry.bundle?.name || entry.devName || 'Onbekend Item';
+    const type = item.type?.value || item.type?.displayValue || 'Cosmetic';
     const rarity = item.rarity?.value || 'common';
-    const price = entry.finalPrice || entry.regularPrice || '?';
-    const image = item.images?.icon || item.images?.featured || entry.bundle?.image || 'https://via.placeholder.com/300?text=Geen+Foto';
+    const price = entry.finalPrice ?? entry.regularPrice ?? '?';
+    
+    // Zoek de best beschikbare afbeelding
+    const image = item.images?.icon || 
+                  item.images?.featured || 
+                  entry.bundle?.image || 
+                  entry.newDisplayAsset?.renderImages?.[0]?.image ||
+                  'https://via.placeholder.com/300?text=Geen+Afbeelding';
 
-    return { name, type, rarity: rarity.toLowerCase(), price, image };
+    return { 
+      name, 
+      type: type.toLowerCase(), 
+      rarity: rarity.toLowerCase(), 
+      price, 
+      image 
+    };
   });
 }
 
@@ -117,16 +112,18 @@ function initFilters() {
   let activeType = 'all';
 
   function apply() {
-    const query = searchInput.value.toLowerCase();
+    const query = searchInput ? searchInput.value.toLowerCase() : '';
     const filtered = shopData.filter(i => {
       const matchSearch = i.name.toLowerCase().includes(query);
-      const matchType = activeType === 'all' || i.type.toLowerCase().includes(activeType);
+      const matchType = activeType === 'all' || i.type.includes(activeType);
       return matchSearch && matchType;
     });
     renderGrid(filtered);
   }
 
-  searchInput.addEventListener('input', apply);
+  if (searchInput) {
+    searchInput.addEventListener('input', apply);
+  }
 
   filterBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
