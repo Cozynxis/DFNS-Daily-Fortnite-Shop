@@ -1,40 +1,14 @@
-/* DFNS — Daily Fortnite Shop */
 "use strict";
-
-const DFNSShop = {
-  items: [], filtered: [],
-  async init() {
-    this.grid = document.querySelector("#shop-items, #featured-items, [data-shop-items]");
-    this.search = document.querySelector("#shop-search-input, .shop-search-input, [data-shop-search]");
-    this.count = document.querySelector("#visible-item-count");
-    this.bind(); await this.load();
-  },
-  bind() { this.search?.addEventListener("input", () => this.render()); },
-  async load() {
-    if (!this.grid) return;
-    this.grid.innerHTML = '<div class="shop-loading-state">Loading today\'s Item Shop…</div>';
-    try {
-      const r = await fetch("https://fortnite-api.com/v2/shop", {headers:{Accept:"application/json"},cache:"no-store"});
-      if (!r.ok) throw new Error(`API error ${r.status}`);
-      const json = await r.json(), entries = Array.isArray(json.data?.entries) ? json.data.entries : [], seen = new Set();
-      this.items = [];
-      for (const entry of entries) for (const item of (entry.brItems || [])) {
-        if (!item?.id || seen.has(item.id)) continue; seen.add(item.id);
-        this.items.push({id:item.id,name:item.name||"Unknown Item",type:item.type?.displayValue||"Cosmetic",rarity:item.rarity?.displayValue||"Unknown",image:item.images?.featured||item.images?.icon||"",price:Number(entry.finalPrice??entry.regularPrice??0)});
-      }
-      this.render();
-    } catch(e) { console.error(e); this.grid.innerHTML=`<div class="shop-api-error"><strong>Couldn't load today's Item Shop.</strong><span>${this.escape(e.message)}</span><button type="button" onclick="DFNSShop.load()">Retry</button></div>`; }
-  },
-  render() {
-    const q=(this.search?.value||"").trim().toLowerCase();
-    this.filtered=this.items.filter(i=>!q||`${i.name} ${i.type} ${i.rarity}`.toLowerCase().includes(q));
-    if(this.count) this.count.textContent=this.filtered.length;
-    if(!this.filtered.length){this.grid.innerHTML='<div class="shop-empty-state"><strong>No items found</strong><span>Try another search.</span></div>';return;}
-    this.grid.innerHTML=this.filtered.map(i=>`<article class="shop-card rarity-${this.slug(i.rarity)}"><a href="item.html?id=${encodeURIComponent(i.id)}" class="shop-card-link"><div class="shop-card-image-wrapper">${i.image?`<img class="shop-card-image" src="${this.attr(i.image)}" alt="${this.attr(i.name)}" loading="lazy">`:''}<span class="shop-card-rarity">${this.escape(i.rarity)}</span></div><div class="shop-card-content"><h3 class="shop-card-name">${this.escape(i.name)}</h3><div class="shop-card-meta"><span>${this.escape(i.type)}</span><strong>V ${i.price.toLocaleString()}</strong></div></div></a><button type="button" class="shop-card-favorite" data-favorite-id="${this.attr(i.id)}">♡</button></article>`).join("");
-  },
-  slug(v){return String(v).toLowerCase().replace(/[^a-z0-9]+/g,"-");},
-  escape(v){const d=document.createElement("div");d.textContent=v??"";return d.innerHTML;},
-  attr(v){return this.escape(v).replace(/"/g,"&quot;");}
-};
-document.addEventListener("DOMContentLoaded",()=>DFNSShop.init());
-window.DFNSShop=DFNSShop;
+const API="https://fortnite-api.com/v2/shop";
+const state={items:[],search:"",category:"all",rarity:"all",price:"all",sort:"default"};
+const esc=v=>{const d=document.createElement("div");d.textContent=v??"";return d.innerHTML};
+const image=c=>c?.images?.featured||c?.images?.icon||c?.images?.full_background||"";
+const type=c=>c?.type?.displayValue||c?.type?.value||"Cosmetic";
+const rarity=c=>c?.rarity?.displayValue||c?.rarity?.value||"Unknown";
+function normalize(data){const out=[],seen=new Set();for(const e of data?.entries||[]){for(const c of e?.brItems||[]){if(!c?.id||seen.has(c.id))continue;seen.add(c.id);out.push({id:c.id,name:c.name||c.displayName||"Unknown Item",type:type(c),rarity:rarity(c),image:image(c),price:Number(e.finalPrice??e.regularPrice??0),section:String(e.section?.name||"Daily").toLowerCase()})}}return out}
+function match(i){if(state.category!=="all"){const t=i.type.toLowerCase();if(state.category==="outfit"?!t.includes("outfit")&&!t.includes("skin"):state.category==="backbling"?!t.includes("back"):!t.includes(state.category))return false}if(state.rarity!=="all"&&!i.rarity.toLowerCase().includes(state.rarity))return false;if(state.price!=="all"&&(state.price==="free"?i.price!==0:i.price>=Number(state.price)))return false;if(state.search&&!`${i.name} ${i.type} ${i.rarity}`.toLowerCase().includes(state.search))return false;return true}
+function card(i){return `<article class="shop-card"><a class="shop-card-link" href="item.html?id=${encodeURIComponent(i.id)}"><div class="shop-card-image-wrapper">${i.image?`<img class="shop-card-image" src="${esc(i.image)}" alt="${esc(i.name)}" loading="lazy">`:``}<span class="shop-card-rarity">${esc(i.rarity)}</span></div><div class="shop-card-content"><h3 class="shop-card-name">${esc(i.name)}</h3><div class="shop-card-meta"><span class="shop-card-type">${esc(i.type)}</span><span class="shop-card-price"><b>V</b> ${i.price.toLocaleString()}</span></div></div></a></article>`}
+function render(){let a=state.items.filter(match);if(state.sort==="price-low")a.sort((x,y)=>x.price-y.price);if(state.sort==="price-high")a.sort((x,y)=>y.price-x.price);if(state.sort==="name-asc")a.sort((x,y)=>x.name.localeCompare(y.name));if(state.sort==="name-desc")a.sort((x,y)=>y.name.localeCompare(x.name));const featured=a.filter(i=>i.section.includes("featured")),daily=a.filter(i=>!i.section.includes("featured"));const f=document.querySelector("#featured-items"),d=document.querySelector("#daily-items");if(f)f.innerHTML=(featured.length?featured:daily).map(card).join("")||`<div class="shop-empty-state"><strong>No items found</strong><span>Try another filter.</span></div>`;if(d)d.innerHTML=daily.map(card).join("")||`<div class="shop-empty-state"><strong>No items found</strong><span>Try another filter.</span></div>`;document.querySelector("#visible-item-count")?.replaceChildren(document.createTextNode(a.length.toLocaleString()));document.querySelector("#featured-count")?.replaceChildren(document.createTextNode(featured.length.toLocaleString()));document.querySelector("#daily-count")?.replaceChildren(document.createTextNode(daily.length.toLocaleString()))}
+async function load(){try{const r=await fetch(API,{headers:{Accept:"application/json"},cache:"no-store"});if(!r.ok)throw Error(`Fortnite API returned ${r.status}`);const j=await r.json();state.items=normalize(j.data);if(!state.items.length)throw Error("No shop items were returned");const date=document.querySelector("#shop-date");if(date)date.textContent=new Date(j.data?.date||Date.now()).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});render()}catch(e){console.error(e);document.querySelectorAll(".shop-grid").forEach(g=>g.innerHTML=`<div class="shop-api-error"><strong>Unable to load today's shop.</strong><span>${esc(e.message)}</span><button type="button" onclick="location.reload()">Retry</button></div>`)}}
+document.addEventListener("DOMContentLoaded",()=>{const q=new URLSearchParams(location.search);state.search=(q.get("search")||"").toLowerCase();const input=document.querySelector("#shop-search-input");if(input){input.value=q.get("search")||"";input.addEventListener("input",()=>{state.search=input.value.trim().toLowerCase();render()})}document.querySelector("#clear-search")?.addEventListener("click",()=>{if(input)input.value="";state.search="";render()});document.querySelector("#shop-sort-select")?.addEventListener("change",e=>{state.sort=e.target.value;render()});document.querySelectorAll("[data-filter-type]").forEach(b=>b.addEventListener("click",()=>{state[b.dataset.filterType]=b.dataset.filterValue||"all";document.querySelectorAll(`[data-filter-type="${b.dataset.filterType}"]`).forEach(x=>x.classList.toggle("active",x===b));render()}));document.querySelector("#reset-filters")?.addEventListener("click",()=>{Object.assign(state,{search:"",category:"all",rarity:"all",price:"all",sort:"default"});if(input)input.value="";const s=document.querySelector("#shop-sort-select");if(s)s.value="default";document.querySelectorAll("[data-filter-type]").forEach(x=>x.classList.toggle("active",x.dataset.filterValue==="all"));render()});load()});
+window.DFNSShop={state,load,render};
