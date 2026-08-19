@@ -107,7 +107,8 @@ const DFNSItem = {
     this.text("#item-description", item.description || item.shortDescription || "No description available for this cosmetic.");
     this.text("#item-type", type); this.text("#item-rarity", rarity);
     this.text("#detail-name", name); this.text("#detail-type", type); this.text("#detail-rarity", rarity); this.text("#detail-id", item.id || "—");
-    this.text("#detail-introduction", this.formatValue(intro)); this.text("#detail-added", this.formatDate(added)); this.text("#detail-last-seen", this.getLastSeen(item));
+    this.text("#detail-introduction", this.formatValue(intro)); this.text("#detail-added", this.formatDate(added));
+    this.renderLastSeen(item);
     this.text("#detail-set", set); this.text("#detail-series", series); this.text("#detail-set-part", item.set?.partOfSet || "—");
     this.text("#detail-shop-status", available ? "In today's shop" : "Not currently listed"); this.text("#detail-available", available ? "Yes" : "No");
 
@@ -131,6 +132,29 @@ const DFNSItem = {
     document.title = `${name} — DFNS`;
     this.setMeta("page-description", `View ${name} on DFNS — Daily Fortnite Shop.`);
     this.setMeta("og-title", `${name} — DFNS`); this.setMeta("og-description", item.description || `View ${name} on DFNS.`); this.setMeta("og-image", image);
+  },
+
+  renderLastSeen(item) {
+    const container = document.querySelector("#detail-last-seen");
+    if (!container) return;
+
+    const timestamp = item?.lastAppearance;
+    const date = this.toDate(timestamp);
+
+    if (!date) {
+      container.textContent = "Never seen / unavailable";
+      container.removeAttribute("title");
+      container.classList.remove("last-seen-value");
+      return;
+    }
+
+    const dateText = date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    const days = this.daysSince(date);
+    const relative = days === 0 ? "today" : days === 1 ? "1 day ago" : `${days.toLocaleString()} days ago`;
+
+    container.textContent = `${dateText} · ${relative}`;
+    container.classList.add("last-seen-value");
+    container.title = `Last seen: ${dateText}`;
   },
 
   renderRelated() {
@@ -186,14 +210,24 @@ const DFNSItem = {
   },
 
   getShopPrice(entry) { if (!entry) return null; const value = Number(entry.finalPrice ?? entry.regularPrice); return Number.isFinite(value) ? value : null; },
-  getLastSeen(item) { if (!Array.isArray(item.shopHistory) || !item.shopHistory.length) return "—"; return this.formatDate(item.shopHistory[item.shopHistory.length - 1]); },
+  toDate(value) {
+    if (value === undefined || value === null || value === "") return null;
+    const date = typeof value === "number" ? new Date(value < 10000000000 ? value * 1000 : value) : new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  },
+  daysSince(date) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return Math.max(0, Math.floor((today - target) / 86400000));
+  },
   getFavorites() { try { const value = JSON.parse(localStorage.getItem(this.favoriteKey) || "[]"); return new Set(Array.isArray(value) ? value : []); } catch (_) { return new Set(); } },
   isFavorite(id) { return this.getFavorites().has(id); },
   updateFavorite(active) { const button = document.querySelector("#favorite-button"); if (!button) return; button.setAttribute("aria-pressed", String(active)); const icon = button.querySelector(".favorite-icon"); const text = button.querySelector(".favorite-text"); if (icon) icon.textContent = active ? "♥" : "♡"; if (text) text.textContent = active ? "Remove from Favorites" : "Add to Favorites"; },
   text(selector, value) { const element = document.querySelector(selector); if (element) element.textContent = value ?? "—"; },
   setMeta(id, value) { const element = document.getElementById(id); if (element) element.setAttribute("content", value ?? ""); },
   formatValue(value) { return value && value !== "—" ? String(value) : "—"; },
-  formatDate(value) { if (!value || value === "—") return "—"; const date = new Date(value); return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }); },
+  formatDate(value) { const date = this.toDate(value); return date ? date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"; },
   showError(message) { const main = document.querySelector("main") || document.body; const existing = document.querySelector(".item-api-error"); if (existing) existing.remove(); const box = document.createElement("div"); box.className = "item-api-error"; box.innerHTML = `<strong>Unable to load cosmetic</strong><p>${this.escape(message)}</p><p><a href="shop.html">← Back to Item Shop</a></p>`; main.prepend(box); },
   escape(value) { const element = document.createElement("div"); element.textContent = value ?? ""; return element.innerHTML; }
 };
