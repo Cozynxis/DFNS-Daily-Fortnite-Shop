@@ -2,7 +2,7 @@
 "use strict";
 
 const API = "https://fortnite-api.com/v2";
-const HISTORY_URL = "https://raw.githubusercontent.com/Fortnite-Datamining/Fortnite-Datamining/main/data/items/registry.json";
+const HISTORY_URL = "https://cdn.jsdelivr.net/gh/Fortnite-Datamining/Fortnite-Datamining@main/data/items/registry.json";
 
 const DFNSItem = {
   item: null,
@@ -59,20 +59,24 @@ const DFNSItem = {
   },
 
   async enrichMetadata(id) {
+    // /search/all returns the complete BR cosmetic record, including shopHistory.
+    // This is important: the normal /search endpoint does not reliably expose the full history.
     const urls = [
-      `${API}/cosmetics/br/search/ids?id=${encodeURIComponent(id)}`,
-      `${API}/cosmetics/br/search?name=${encodeURIComponent(this.item?.name || "")}&matchMethod=full`
+      `${API}/cosmetics/br/search/all?id=${encodeURIComponent(id)}`,
+      `${API}/cosmetics/br/search/all?name=${encodeURIComponent(this.item?.name || "")}&matchMethod=full`,
+      `${API}/cosmetics/br/search/ids?id=${encodeURIComponent(id)}`
     ];
+
     for (const url of urls) {
       try {
         const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
         if (!response.ok) continue;
         const json = await response.json();
         const list = Array.isArray(json?.data) ? json.data : json?.data ? [json.data] : [];
-        const found = list.find(x => x?.id === id) || list[0];
+        const found = list.find(x => x?.id === id) || list.find(x => String(x?.name || "").toLowerCase() === String(this.item?.name || "").toLowerCase()) || list[0];
         if (!found) continue;
         this.item = { ...this.item, ...found };
-        break;
+        if (Array.isArray(found.shopHistory) && found.shopHistory.length) break;
       } catch (error) { console.warn("DFNS metadata:", error); }
     }
   },
@@ -92,12 +96,7 @@ const DFNSItem = {
       const response = await fetch(HISTORY_URL, { cache: "no-store" });
       if (!response.ok) return;
       const registry = await response.json();
-      // Fortnite-Datamining's registry is keyed directly by cosmetic ID.
-      this.historyRecord = registry?.[id] || null;
-      if (this.historyRecord) return;
-
-      // Defensive fallback for future registry shape changes.
-      this.historyRecord = registry?.items?.[id] || registry?.data?.[id] || null;
+      this.historyRecord = registry?.[id] || registry?.items?.[id] || registry?.data?.[id] || null;
     } catch (error) { console.warn("DFNS historical registry:", error); }
   },
 
@@ -134,9 +133,7 @@ const DFNSItem = {
   },
 
   getHistoryEntries() {
-    const record = this.historyRecord;
-    // Actual Fortnite-Datamining registry field: shop_appearances.
-    const raw = record?.shop_appearances || record?.shopHistory || record?.shop_history || record?.appearances || record?.shopAppearances || [];
+    const raw = this.item?.shopHistory || this.historyRecord?.shop_appearances || this.historyRecord?.shopHistory || this.historyRecord?.shop_history || this.historyRecord?.appearances || this.historyRecord?.shopAppearances || [];
     if (!Array.isArray(raw)) return [];
     return raw.map(entry => {
       if (typeof entry === "string" || typeof entry === "number") return { date: this.toDate(entry), price: null };
@@ -150,17 +147,14 @@ const DFNSItem = {
   getLastSeen() {
     const direct = this.toDate(this.item?.lastAppearance);
     if (direct && direct <= new Date(Date.now() + 86400000)) return direct;
-    const history = this.getHistoryEntries();
-    return history[0]?.date || null;
+    return this.getHistoryEntries()[0]?.date || null;
   },
 
   getPrice() {
-    // Current shop price wins when the cosmetic is currently available.
     if (this.shopEntry) {
       const current = this.number(this.shopEntry.finalPrice ?? this.shopEntry.regularPrice ?? this.shopEntry.prices?.[0]?.finalPrice ?? this.shopEntry.prices?.[0]?.regularPrice);
       if (current != null) return current;
     }
-    // Historical price from Fortnite-Datamining registry.
     const history = this.getHistoryEntries();
     return history.find(x => x.price != null)?.price ?? this.number(this.historyRecord?.price);
   },
