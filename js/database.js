@@ -10,6 +10,7 @@ const DFNSDatabase = {
     init() {
         this.ensureSearchUI();
         this.bindTriggers();
+        this.bindNavigationActions();
     },
 
     ensureSearchUI() {
@@ -18,17 +19,7 @@ const DFNSDatabase = {
         overlay.id = "dfns-cosmetic-search";
         overlay.className = "dfns-search-modal";
         overlay.setAttribute("aria-hidden", "true");
-        overlay.innerHTML = `
-            <div class="dfns-search-backdrop" data-db-close></div>
-            <section class="dfns-search-panel" role="dialog" aria-modal="true" aria-label="Search Fortnite cosmetics">
-                <div class="dfns-search-head">
-                    <div><span class="dfns-search-eyebrow">COSMETIC DATABASE</span><h2>Search Fortnite Cosmetics</h2></div>
-                    <button type="button" class="dfns-search-close" data-db-close aria-label="Close search">×</button>
-                </div>
-                <div class="dfns-search-input-wrap"><span>⌕</span><input id="dfns-database-input" type="search" autocomplete="off" placeholder="Search Fresh, Peely, Galaxy..."><kbd>ESC</kbd></div>
-                <div id="dfns-database-status" class="dfns-search-status">Type at least 2 characters to search the full cosmetic database.</div>
-                <div id="dfns-database-results" class="dfns-search-results"></div>
-            </section>`;
+        overlay.innerHTML = `<div class="dfns-search-backdrop" data-db-close></div><section class="dfns-search-panel" role="dialog" aria-modal="true" aria-label="Search Fortnite cosmetics"><div class="dfns-search-head"><div><span class="dfns-search-eyebrow">COSMETIC DATABASE</span><h2>Search Fortnite Cosmetics</h2></div><button type="button" class="dfns-search-close" data-db-close aria-label="Close search">×</button></div><div class="dfns-search-input-wrap"><span>⌕</span><input id="dfns-database-input" type="search" autocomplete="off" placeholder="Search Fresh, Peely, Galaxy..."><kbd>ESC</kbd></div><div id="dfns-database-status" class="dfns-search-status">Type at least 2 characters to search the full cosmetic database.</div><div id="dfns-database-results" class="dfns-search-results"></div></section>`;
         document.body.appendChild(overlay);
         overlay.addEventListener("click", event => { if (event.target.closest("[data-db-close]")) this.close(); });
         const input = overlay.querySelector("#dfns-database-input");
@@ -41,6 +32,48 @@ const DFNSDatabase = {
             if (trigger.dataset.dbBound === "true") return;
             trigger.dataset.dbBound = "true";
             trigger.addEventListener("click", event => { event.preventDefault(); this.open(); });
+        });
+    },
+
+    bindNavigationActions() {
+        const nav = document.querySelector(".main-navigation");
+        if (!nav) return;
+
+        const links = nav.querySelectorAll(".nav-link");
+        const cosmetics = nav.querySelector('[data-nav="cosmetics"]');
+
+        /* Navigation is an action bar: none of the buttons stay selected. */
+        links.forEach(link => {
+            link.classList.remove("active");
+            link.removeAttribute("aria-current");
+        });
+
+        /* Cosmetics opens the database and never changes the URL. */
+        if (cosmetics && cosmetics.dataset.dbNavBound !== "true") {
+            cosmetics.dataset.dbNavBound = "true";
+            cosmetics.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                links.forEach(link => {
+                    link.classList.remove("active");
+                    link.removeAttribute("aria-current");
+                });
+                this.open();
+            });
+        }
+
+        /* Home and Item Shop are normal navigation buttons, not persistent tabs. */
+        const home = nav.querySelector('[data-nav="home"]');
+        const shop = nav.querySelector('[data-nav="shop"]');
+        [home, shop].forEach(link => {
+            if (!link || link.dataset.dbNavBound === "true") return;
+            link.dataset.dbNavBound = "true";
+            link.addEventListener("click", () => {
+                links.forEach(item => {
+                    item.classList.remove("active");
+                    item.removeAttribute("aria-current");
+                });
+            });
         });
     },
 
@@ -110,44 +143,5 @@ const DFNSDatabase = {
     escape(value) { const node = document.createElement("div"); node.textContent = value ?? ""; return node.innerHTML; }
 };
 
-/* Initialise the database first, then repair the navbar after the legacy app.js active-state code runs. */
-document.addEventListener("DOMContentLoaded", () => {
-    DFNSDatabase.init();
-
-    const nav = document.querySelector(".main-navigation");
-    if (!nav) return;
-
-    const file = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
-    const isHome = file === "" || file === "index.html";
-    const isShop = file === "shop.html";
-    const isItem = file === "item.html";
-
-    nav.querySelectorAll(".nav-link").forEach(link => {
-        link.classList.remove("active");
-        link.removeAttribute("aria-current");
-    });
-
-    const home = nav.querySelector('[data-nav="home"]');
-    const shop = nav.querySelector('[data-nav="shop"]');
-    const cosmetics = nav.querySelector('[data-nav="cosmetics"]');
-
-    if (isHome) {
-        home?.classList.add("active");
-        home?.setAttribute("aria-current", "page");
-    } else if (isShop || isItem) {
-        shop?.classList.add("active");
-        shop?.setAttribute("aria-current", "page");
-    }
-
-    cosmetics?.addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
-        nav.querySelectorAll(".nav-link").forEach(link => {
-            link.classList.remove("active");
-            link.removeAttribute("aria-current");
-        });
-        DFNSDatabase.open();
-    });
-});
-
+document.addEventListener("DOMContentLoaded", () => DFNSDatabase.init());
 window.DFNSDatabase = DFNSDatabase;
