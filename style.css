@@ -1,47 +1,210 @@
+:root {
+  --bg-primary: #0a0c10;
+  --bg-card: #161a23;
+  --accent-gold: #f3af19;
+  --text-main: #ffffff;
+  --text-muted: #a0a8c0;
+  
+  /* Rarity Colors */
+  --rarity-common: #b0b0b0;
+  --rarity-uncommon: #60b22d;
+  --rarity-rare: #2982e2;
+  --rarity-epic: #b137e0;
+  --rarity-legendary: #ea7d23;
+  --rarity-icon: #2cb3b3;
+  --rarity-marvel: #c82323;
+  --rarity-starwars: #3b5cb0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-  font-family: 'Arial Black', sans-serif;
-  background-color: #121212;
-  color: #fff;
-  margin: 0;
-  padding: 20px;
-  text-align: center;
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 40px;
 }
 
-header h1 {
-  font-size: 3rem;
-  margin: 0;
-  color: #f3af19;
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: #11141d;
+  border-bottom: 3px solid var(--accent-gold);
+}
+
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3.5rem;
+  letter-spacing: 2px;
+  color: var(--accent-gold);
+  line-height: 1;
+}
+
+.tagline {
+  font-size: 0.9rem;
+  color: var(--text-muted);
   text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-#shop-container {
+.controls {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: space-between;
+}
+
+.search-box input {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #2a3040;
+  background: var(--bg-card);
+  color: #fff;
+  width: 250px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-btn {
+  background: var(--bg-card);
+  border: 1px solid #2a3040;
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filter-btn.active, .filter-btn:hover {
+  background: var(--accent-gold);
+  color: #000;
+  font-weight: bold;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  margin: 30px 0 15px 0;
+  color: #fff;
+  border-left: 5px solid var(--accent-gold);
+  padding-left: 10px;
+}
+
+.shop-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
-  padding: 20px 0;
 }
 
 .item-card {
-  background: #1e1e24;
+  background: var(--bg-card);
   border-radius: 12px;
-  padding: 15px;
-  border: 2px solid #333;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #2a3040;
+  transition: transform 0.2s ease;
   display: flex;
   flex-direction: column;
-  align-items: center;
+}
+
+.item-card:hover {
+  transform: translateY(-5px);
+}
+
+.image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  background-size: cover;
+  background-position: center;
 }
 
 .item-card img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  border-radius: 8px;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-details {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
 }
 
 .item-name {
+  font-weight: 800;
   font-size: 1.1rem;
-  margin: 10px 0 5px 0;
+  margin-bottom: 5px;
+}
+
+.item-type {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
 }
 
 .item-price {
-  color: #f3af19;
-  font-size: 1rem;
+  font-weight: bold;
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Dynamic Rarities */
+.rarity-common { border-top: 5px solid var(--rarity-common); }
+.rarity-uncommon { border-top: 5px solid var(--rarity-uncommon); }
+.rarity-rare { border-top: 5px solid var(--rarity-rare); }
+.rarity-epic { border-top: 5px solid var(--rarity-epic); }
+.rarity-legendary { border-top: 5px solid var(--rarity-legendary); }
+.rarity-icon { border-top: 5px solid var(--rarity-icon); }
+.rarity-marvel { border-top: 5px solid var(--rarity-marvel); }
+.rarity-starwars { border-top: 5px solid var(--rarity-starwars); }
+
+/* Loader & Error State */
+.loader-container, .error-container {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #2a3040;
+  border-top: 5px solid var(--accent-gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hidden { display: none !important; }
+
+footer {
+  text-align: center;
+  margin-top: 50px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
