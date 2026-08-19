@@ -5,16 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DFNS - Daily Fortnite Shop</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <h1>DFNS</h1>
-    <p>Daily Fortnite Shop</p>
+
+  <header class="navbar">
+    <div class="logo-container">
+      <h1 class="logo">DFNS</h1>
+      <span class="tagline">Daily Fortnite Shop</span>
+    </div>
+    <div class="status-bar">
+      <span id="last-updated">Status: Ophalen...</span>
+    </div>
   </header>
 
-  <main id="shop-container">
-    <p id="loading">Shop laden...</p>
+  <section class="controls">
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Zoek op item naam...">
+    </div>
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-filter="all">Alles</button>
+      <button class="filter-btn" data-filter="outfit">Outfits</button>
+      <button class="filter-btn" data-filter="emote">Emotes</button>
+      <button class="filter-btn" data-filter="pickaxe">Pickaxes</button>
+    </div>
+  </section>
+
+  <main id="app">
+    <div id="loader" class="loader-container">
+      <div class="spinner"></div>
+      <p>Fortnite Shop Laden...</p>
+    </div>
+
+    <div id="error-message" class="error-container hidden">
+      <h2>Oeps! Er ging iets mis.</h2>
+      <p id="error-details">Kon de winkeldata niet ophalen.</p>
+      <button onclick="fetchShopData()">Opnieuw Proberen</button>
+    </div>
+
+    <section id="shop-sections"></section>
   </main>
+
+  <footer>
+    <p>&copy; DFNS App - Niet geaffilieerd met Epic Games.</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
