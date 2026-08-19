@@ -5,52 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DFNS - Daily Fortnite Shop</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,900;1,900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <header class="navbar">
-    <div class="logo-container">
+  <header class="hero">
+    <div class="logo-wrapper">
       <h1 class="logo">DFNS</h1>
-      <span class="tagline">Daily Fortnite Shop</span>
+      <span class="badge">DAILY FORTNITE SHOP</span>
     </div>
-    <div class="status-bar">
-      <span id="last-updated">Status: Ophalen...</span>
-    </div>
+    <div id="status-tag" class="status-tag">Laden...</div>
   </header>
 
-  <section class="controls">
-    <div class="search-box">
-      <input type="text" id="search-input" placeholder="Zoek op item naam...">
-    </div>
-    <div class="filter-buttons">
-      <button class="filter-btn active" data-filter="all">Alles</button>
-      <button class="filter-btn" data-filter="outfit">Outfits</button>
-      <button class="filter-btn" data-filter="emote">Emotes</button>
-      <button class="filter-btn" data-filter="pickaxe">Pickaxes</button>
-    </div>
-  </section>
+  <div class="container">
+    <section class="toolbar">
+      <input type="text" id="search-input" placeholder="Zoek skin, emote, pickaxe..." autocomplete="off">
+      <div class="filter-group">
+        <button class="filter-btn active" data-type="all">Alles</button>
+        <button class="filter-btn" data-type="outfit">Outfits</button>
+        <button class="filter-btn" data-type="emote">Emotes</button>
+        <button class="filter-btn" data-type="pickaxe">Pickaxes</button>
+      </div>
+    </section>
 
-  <main id="app">
-    <div id="loader" class="loader-container">
-      <div class="spinner"></div>
-      <p>Fortnite Shop Laden...</p>
-    </div>
+    <main id="app">
+      <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p>Live Fortnite Shop data binnenhalen...</p>
+      </div>
 
-    <div id="error-message" class="error-container hidden">
-      <h2>Oeps! Er ging iets mis.</h2>
-      <p id="error-details">Kon de winkeldata niet ophalen.</p>
-      <button onclick="fetchShopData()">Opnieuw Proberen</button>
-    </div>
+      <div id="error-box" class="error-box hidden">
+        <h2>Er ging iets mis</h2>
+        <p id="error-msg"></p>
+        <button onclick="loadShop()">Opnieuw Proberen</button>
+      </div>
 
-    <section id="shop-sections"></section>
-  </main>
-
-  <footer>
-    <p>&copy; DFNS App - Niet geaffilieerd met Epic Games.</p>
-  </footer>
+      <div id="shop-container"></div>
+    </main>
+  </div>
 
   <script src="script.js"></script>
 </body>
