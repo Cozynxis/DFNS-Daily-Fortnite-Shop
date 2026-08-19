@@ -1,0 +1,47 @@
+body {
+  font-family: 'Arial Black', sans-serif;
+  background-color: #121212;
+  color: #fff;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 3rem;
+  margin: 0;
+  color: #f3af19;
+  text-transform: uppercase;
+}
+
+#shop-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.item-card {
+  background: #1e1e24;
+  border-radius: 12px;
+  padding: 15px;
+  border: 2px solid #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.item-card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.item-name {
+  font-size: 1.1rem;
+  margin: 10px 0 5px 0;
+}
+
+.item-price {
+  color: #f3af19;
+  font-size: 1rem;
+}
