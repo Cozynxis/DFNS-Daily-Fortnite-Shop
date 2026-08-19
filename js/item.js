@@ -2,15 +2,11 @@
 "use strict";
 
 const API = "https://fortnite-api.com/v2";
+const REGISTRY_URLS = [
+  "https://raw.githubusercontent.com/Fortnite-Datamining/Fortnite-Datamining/main/data/items/registry.json",
+  "https://cdn.jsdelivr.net/gh/Fortnite-Datamining/Fortnite-Datamining@main/data/items/registry.json"
+];
 
-/*
- * IMPORTANT:
- * Fortnite-API exposes lastAppearance/added on cosmetic records.
- * Historical shop prices are not part of the current shop response.
- * We therefore use the API metadata first, then a small verified legacy
- * fallback for known old cosmetics. This keeps the detail page reliable
- * instead of depending on a huge third-party registry download in-browser.
- */
 const KNOWN_HISTORY = {
   eid_fresh: {
     firstSeen: "2017-12-16",
@@ -21,6 +17,8 @@ const KNOWN_HISTORY = {
     ]
   }
 };
+
+let registryPromise = null;
 
 const DFNSItem = {
   item: null,
@@ -44,7 +42,8 @@ const DFNSItem = {
 
       await Promise.allSettled([
         this.enrichMetadata(id),
-        this.loadShop(id)
+        this.loadShop(id),
+        this.loadLifetimeHistory(id)
       ]);
 
       this.render();
@@ -82,10 +81,8 @@ const DFNSItem = {
 
   async enrichMetadata(id) {
     const name = this.item?.name || "";
-    /* Use the documented search endpoint first. It returns added/lastAppearance. */
     const urls = [
       `${API}/cosmetics/br/search?id=${encodeURIComponent(id)}&matchMethod=full&language=en`,
-      `${API}/cosmetics/br/search/ids?id=${encodeURIComponent(id)}&language=en`,
       `${API}/cosmetics/br/search/all?id=${encodeURIComponent(id)}&language=en`,
       `${API}/cosmetics/br/search?name=${encodeURIComponent(name)}&matchMethod=full&language=en&searchLanguage=en`,
       `${API}/cosmetics/br/search/all?name=${encodeURIComponent(name)}&matchMethod=full&language=en&searchLanguage=en`
@@ -100,15 +97,72 @@ const DFNSItem = {
         const found = list.find(x => String(x?.id).toLowerCase() === String(id).toLowerCase()) || list.find(x => String(x?.name || "").toLowerCase() === name.toLowerCase());
         if (!found) continue;
         this.item = { ...this.item, ...found };
-        if (found.lastAppearance != null || found.added != null) break;
+        if (found.lastAppearance != null || found.added != null || found.shopHistory?.length) break;
       } catch (error) {
         console.warn("DFNS metadata request failed:", url, error);
       }
     }
+  },
 
-    /* Always make a deterministic legacy lookup by ID AND name. */
-    const key = this.historyKey();
-    if (KNOWN_HISTORY[key]) this.historyRecord = KNOWN_HISTORY[key];
+  async loadLifetimeHistory(id) {
+    const knownKey = this.historyKey();
+    if (KNOWN_HISTORY[knownKey]) this.historyRecord = this.normalizeRegistryRecord(KNOWN_HISTORY[knownKey]);
+
+    if (!registryPromise) {
+      registryPromise = (async () => {
+        for (const url of REGISTRY_URLS) {
+          try {
+            const response = await fetch(url, { cache: "no-store" });
+            if (!response.ok) continue;
+            const data = await response.json();
+            if (data && typeof data === "object") return data;
+          } catch (error) {
+            console.warn("DFNS lifetime registry failed:", url, error);
+          }
+        }
+        return null;
+      })();
+    }
+
+    try {
+      const registry = await registryPromise;
+      if (!registry) return;
+      const record = this.findRegistryRecord(registry, id, this.item?.name);
+      if (record) this.historyRecord = this.normalizeRegistryRecord(record);
+    } catch (error) {
+      console.warn("DFNS registry processing failed:", error);
+    }
+  },
+
+  findRegistryRecord(registry, id, name) {
+    const targetId = String(id || "").toLowerCase();
+    if (registry[targetId]) return registry[targetId];
+    if (registry[id]) return registry[id];
+
+    const values = Array.isArray(registry) ? registry : Object.values(registry);
+    return values.find(record => {
+      const rid = record?.id ?? record?.item_id ?? record?.itemId;
+      const rname = record?.name ?? record?.displayName;
+      return (rid && String(rid).toLowerCase() === targetId) || (name && rname && String(rname).toLowerCase() === String(name).toLowerCase());
+    }) || null;
+  },
+
+  normalizeRegistryRecord(record) {
+    const appearances = Array.isArray(record?.shop_appearances) ? record.shop_appearances : Array.isArray(record?.shopAppearances) ? record.shopAppearances : Array.isArray(record?.appearances) ? record.appearances : [];
+    const normalized = appearances.map(entry => {
+      if (typeof entry === "string" || typeof entry === "number") return { date: this.toDate(entry), price: null };
+      return {
+        date: this.toDate(entry?.date ?? entry?.appearance ?? entry?.timestamp),
+        price: this.number(entry?.price ?? entry?.final_price ?? entry?.finalPrice ?? entry?.regular_price ?? entry?.regularPrice)
+      };
+    }).filter(x => x.date).sort((a,b) => b.date - a.date);
+
+    return {
+      firstSeen: record?.first_seen ?? record?.firstSeen ?? record?.first_appearance ?? record?.firstAppearance ?? null,
+      lastSeen: record?.last_seen ?? record?.lastSeen ?? normalized[0]?.date ?? null,
+      price: this.number(record?.price ?? record?.final_price ?? record?.finalPrice ?? normalized[0]?.price),
+      appearances: normalized
+    };
   },
 
   async loadShop(id) {
@@ -171,27 +225,21 @@ const DFNSItem = {
   },
 
   getHistoryEntries() {
-    const raw = this.item?.shopHistory || this.item?.shopHistoryDates || this.historyRecord?.appearances || [];
+    const raw = this.item?.shopHistory || this.item?.shopHistoryDates || [];
     if (Array.isArray(raw) && raw.length) {
       return raw.map(entry => {
         if (typeof entry === "string" || typeof entry === "number") return { date: this.toDate(entry), price: null };
-        return {
-          date: this.toDate(entry?.date ?? entry?.appearance ?? entry?.timestamp),
-          price: this.number(entry?.price ?? entry?.finalPrice ?? entry?.regularPrice ?? entry?.final_price ?? entry?.regular_price)
-        };
+        return { date: this.toDate(entry?.date ?? entry?.appearance ?? entry?.timestamp), price: this.number(entry?.price ?? entry?.finalPrice ?? entry?.regularPrice ?? entry?.final_price ?? entry?.regular_price) };
       }).filter(x => x.date).sort((a,b) => b.date - a.date);
     }
-    if (this.historyRecord?.appearances?.length) return this.historyRecord.appearances.map(date => ({ date: this.toDate(date), price: this.historyRecord.price })).filter(x => x.date).sort((a,b) => b.date-a.date);
-    return [];
+    return Array.isArray(this.historyRecord?.appearances) ? this.historyRecord.appearances : [];
   },
 
   getLastSeen() {
     const direct = this.toDate(this.item?.lastAppearance);
     if (direct && direct <= new Date(Date.now() + 86400000)) return direct;
     const entries = this.getHistoryEntries();
-    if (entries[0]?.date) return entries[0].date;
-    const fallback = this.historyRecord?.lastSeen;
-    return this.toDate(fallback);
+    return entries[0]?.date || this.toDate(this.historyRecord?.lastSeen);
   },
 
   getPrice() {
