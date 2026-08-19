@@ -13,7 +13,8 @@ const DFNSItem = {
 
   async init() {
     this.bind();
-    const id = new URLSearchParams(location.search).get("id") || new URLSearchParams(location.search).get("item");
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id") || params.get("item");
     if (!id) return this.showError("No cosmetic was selected.");
 
     try {
@@ -23,12 +24,7 @@ const DFNSItem = {
       if (!json?.data) throw new Error("The API returned no cosmetic data.");
       this.item = json.data;
 
-      await Promise.allSettled([
-        this.enrichMetadata(id),
-        this.loadShop(id),
-        this.loadHistory(id)
-      ]);
-
+      await Promise.allSettled([this.enrichMetadata(id), this.loadShop(id), this.loadHistory(id)]);
       this.render();
     } catch (error) {
       console.error("DFNS item:", error);
@@ -76,8 +72,6 @@ const DFNSItem = {
         const found = list.find(x => x?.id === id) || list[0];
         if (!found) continue;
         this.item = { ...this.item, ...found };
-        if (found.lastAppearance != null) this.item.lastAppearance = found.lastAppearance;
-        if (found.added != null) this.item.added = found.added;
         break;
       } catch (error) { console.warn("DFNS metadata:", error); }
     }
@@ -98,9 +92,12 @@ const DFNSItem = {
       const response = await fetch(HISTORY_URL, { cache: "no-store" });
       if (!response.ok) return;
       const registry = await response.json();
-      const record = registry?.[id] || registry?.items?.[id] || registry?.data?.[id];
-      if (!record) return;
-      this.historyRecord = record;
+      // Fortnite-Datamining's registry is keyed directly by cosmetic ID.
+      this.historyRecord = registry?.[id] || null;
+      if (this.historyRecord) return;
+
+      // Defensive fallback for future registry shape changes.
+      this.historyRecord = registry?.items?.[id] || registry?.data?.[id] || null;
     } catch (error) { console.warn("DFNS historical registry:", error); }
   },
 
@@ -109,10 +106,10 @@ const DFNSItem = {
     const name = item.name || "Unknown Item";
     const type = item.type?.displayValue || item.type?.value || item.displayType || "Cosmetic";
     const rarity = item.rarity?.displayValue || item.rarity?.value || item.displayRarity || "Unknown";
-    const set = item.set?.text || item.set?.name || "—";
+    const set = item.set?.text || item.set?.name || this.historyRecord?.set || "—";
     const series = item.series?.name || item.series?.value || "—";
     const intro = item.introduction?.text || item.introduction?.chapter || item.introduction?.season || "—";
-    const added = this.toDate(item.added) || this.toDate(this.historyRecord?.firstSeen ?? this.historyRecord?.first_seen);
+    const added = this.toDate(item.added) || this.toDate(this.historyRecord?.first_seen) || this.toDate(this.historyRecord?.firstSeen);
     const lastSeen = this.getLastSeen();
     const price = this.getPrice();
     const available = !!this.shopEntry;
@@ -126,8 +123,8 @@ const DFNSItem = {
     this.text("#detail-shop-status", available ? "In today's shop" : "Not currently listed");
     this.text("#item-price", price == null ? "—" : price.toLocaleString());
     this.text("#detail-price", price == null ? "Not currently listed" : `${price.toLocaleString()} V-Bucks`);
-    this.text("#availability-text", available ? "Available in today's shop" : "Not currently in the shop");
-    this.text("#availability-date", available ? "Live shop data" : "Historical shop data");
+    this.text("#availability-text", available ? "Available in today's shop" : lastSeen ? "Previously available in the Item Shop" : "Not currently in the shop");
+    this.text("#availability-date", available ? "Live shop data" : lastSeen ? `Last seen ${this.formatDate(lastSeen)}` : "No historical shop appearance recorded");
 
     this.renderLastSeen(lastSeen);
     this.setImage();
@@ -138,7 +135,8 @@ const DFNSItem = {
 
   getHistoryEntries() {
     const record = this.historyRecord;
-    const raw = record?.shopHistory || record?.shop_history || record?.appearances || record?.shopAppearances || [];
+    // Actual Fortnite-Datamining registry field: shop_appearances.
+    const raw = record?.shop_appearances || record?.shopHistory || record?.shop_history || record?.appearances || record?.shopAppearances || [];
     if (!Array.isArray(raw)) return [];
     return raw.map(entry => {
       if (typeof entry === "string" || typeof entry === "number") return { date: this.toDate(entry), price: null };
@@ -146,21 +144,23 @@ const DFNSItem = {
         date: this.toDate(entry?.date ?? entry?.appearance ?? entry?.timestamp ?? entry?.inDate ?? entry?.in_date ?? entry?.dateAdded),
         price: this.number(entry?.price ?? entry?.finalPrice ?? entry?.final_price ?? entry?.regularPrice ?? entry?.regular_price)
       };
-    }).filter(x => x.date).sort((a,b) => b.date - a.date);
+    }).filter(x => x.date && x.date <= new Date(Date.now() + 86400000)).sort((a,b) => b.date - a.date);
   },
 
   getLastSeen() {
     const direct = this.toDate(this.item?.lastAppearance);
     if (direct && direct <= new Date(Date.now() + 86400000)) return direct;
     const history = this.getHistoryEntries();
-    return history.find(x => x.date <= new Date(Date.now() + 86400000))?.date || null;
+    return history[0]?.date || null;
   },
 
   getPrice() {
+    // Current shop price wins when the cosmetic is currently available.
     if (this.shopEntry) {
-      const current = this.number(this.shopEntry.finalPrice ?? this.shopEntry.regularPrice);
+      const current = this.number(this.shopEntry.finalPrice ?? this.shopEntry.regularPrice ?? this.shopEntry.prices?.[0]?.finalPrice ?? this.shopEntry.prices?.[0]?.regularPrice);
       if (current != null) return current;
     }
+    // Historical price from Fortnite-Datamining registry.
     const history = this.getHistoryEntries();
     return history.find(x => x.price != null)?.price ?? this.number(this.historyRecord?.price);
   },
