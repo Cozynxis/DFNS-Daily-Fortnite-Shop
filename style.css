@@ -1,17 +1,19 @@
 :root {
-  --bg-dark: #0b0e14;
-  --bg-card: #151922;
-  --accent-yellow: #ffe600;
+  --bg-main: #090c10;
+  --bg-card: #121721;
+  --accent-gold: #f3af19;
   --accent-blue: #00d2ff;
   --text-main: #ffffff;
-  --text-sub: #8c96a8;
+  --text-sub: #7a8b9e;
 
   /* Fortnite Rarities */
-  --rarity-legendary: linear-gradient(135deg, #d35400, #e67e22);
-  --rarity-epic: linear-gradient(135deg, #8e44ad, #9b59b6);
-  --rarity-rare: linear-gradient(135deg, #2980b9, #3498db);
-  --rarity-uncommon: linear-gradient(135deg, #27ae60, #2ecc71);
-  --rarity-common: linear-gradient(135deg, #7f8c8d, #95a5a6);
+  --rarity-legendary: #ea7d23;
+  --rarity-epic: #b137e0;
+  --rarity-rare: #2982e2;
+  --rarity-uncommon: #60b22d;
+  --rarity-common: #808080;
+  --rarity-icon: #2cb3b3;
+  --rarity-marvel: #c82323;
 }
 
 * {
@@ -21,92 +23,91 @@
 }
 
 body {
-  background-color: var(--bg-dark);
+  background-color: var(--bg-main);
   color: var(--text-main);
   font-family: 'Roboto', sans-serif;
   min-height: 100vh;
 }
 
 .hero {
-  background: linear-gradient(180deg, #182030 0%, var(--bg-dark) 100%);
-  padding: 30px 20px;
+  background: radial-gradient(circle at top, #1b263b 0%, var(--bg-main) 100%);
+  padding: 40px 20px 20px;
   text-align: center;
-  border-bottom: 2px solid #1e2638;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  border-bottom: 2px solid #1a2233;
 }
 
 .logo {
   font-family: 'Montserrat', sans-serif;
-  font-size: 4rem;
+  font-size: 4.5rem;
   font-weight: 900;
   font-style: italic;
   letter-spacing: -2px;
   color: #fff;
-  text-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
-  line-height: 1;
+  text-shadow: 0 0 25px rgba(0, 210, 255, 0.4);
+  line-height: 0.9;
 }
 
-.badge {
-  background: var(--accent-yellow);
+.sub-logo {
+  background: var(--accent-gold);
   color: #000;
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   padding: 4px 12px;
-  transform: skewX(-10deg);
+  transform: skewX(-12deg);
   display: inline-block;
+  margin-top: 8px;
 }
 
 .status-tag {
+  margin-top: 15px;
   font-size: 0.85rem;
   color: var(--accent-blue);
-  background: rgba(0, 210, 255, 0.1);
+  background: rgba(0, 210, 255, 0.08);
   padding: 6px 16px;
   border-radius: 20px;
-  border: 1px solid rgba(0, 210, 255, 0.3);
+  display: inline-block;
+  border: 1px solid rgba(0, 210, 255, 0.2);
 }
 
-.container {
-  max-width: 1300px;
+.main-wrapper {
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 30px 20px;
 }
 
-.toolbar {
+.controls-bar {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   gap: 15px;
+  justify-content: space-between;
   margin-bottom: 30px;
 }
 
-.toolbar input {
-  flex: 1;
-  min-width: 250px;
+.search-wrapper input {
+  width: 280px;
   background: var(--bg-card);
-  border: 1px solid #283042;
+  border: 1px solid #222c3d;
   border-radius: 8px;
-  padding: 12px 18px;
+  padding: 12px 16px;
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.95rem;
   outline: none;
 }
 
-.toolbar input:focus {
+.search-wrapper input:focus {
   border-color: var(--accent-blue);
 }
 
-.filter-group {
+.filter-wrapper {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .filter-btn {
   background: var(--bg-card);
-  border: 1px solid #283042;
+  border: 1px solid #222c3d;
   color: var(--text-sub);
   padding: 10px 18px;
   border-radius: 8px;
@@ -115,15 +116,15 @@ body {
   transition: all 0.2s;
 }
 
-.filter-btn:hover, .filter-btn.active {
-  background: var(--accent-yellow);
+.filter-btn.active, .filter-btn:hover {
+  background: var(--accent-gold);
   color: #000;
-  border-color: var(--accent-yellow);
+  border-color: var(--accent-gold);
 }
 
 .shop-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 20px;
 }
 
@@ -131,70 +132,77 @@ body {
   background: var(--bg-card);
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #252d3d;
+  border: 1px solid #1e2838;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  transition: transform 0.2s;
 }
 
 .item-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
-.img-box {
+.img-container {
   width: 100%;
   aspect-ratio: 1/1;
+  background: #18202d;
   position: relative;
-  background-size: cover;
-  background-position: center;
+  overflow: hidden;
 }
 
-.img-box img {
+.img-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.card-details {
+.card-info {
   padding: 15px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   justify-content: space-between;
+  background: var(--bg-card);
 }
 
 .item-title {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: 1.1rem;
+  font-size: 1rem;
   text-transform: uppercase;
+  color: #fff;
+  line-height: 1.2;
 }
 
-.item-sub {
-  font-size: 0.8rem;
+.item-category {
+  font-size: 0.75rem;
   color: var(--text-sub);
+  text-transform: uppercase;
   margin-top: 4px;
+  font-weight: 700;
 }
 
-.price-tag {
-  margin-top: 15px;
+.price-box {
+  margin-top: 12px;
   font-weight: 900;
-  color: var(--accent-yellow);
+  color: var(--accent-gold);
   font-size: 1.1rem;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-/* Rarities Styling */
-.rarity-legendary .img-box { background: var(--rarity-legendary); }
-.rarity-epic .img-box { background: var(--rarity-epic); }
-.rarity-rare .img-box { background: var(--rarity-rare); }
-.rarity-uncommon .img-box { background: var(--rarity-uncommon); }
-.rarity-common .img-box { background: var(--rarity-common); }
+/* Dynamic Rarity Borders */
+.rarity-legendary { border-top: 4px solid var(--rarity-legendary); }
+.rarity-epic { border-top: 4px solid var(--rarity-epic); }
+.rarity-rare { border-top: 4px solid var(--rarity-rare); }
+.rarity-uncommon { border-top: 4px solid var(--rarity-uncommon); }
+.rarity-common { border-top: 4px solid var(--rarity-common); }
+.rarity-icon { border-top: 4px solid var(--rarity-icon); }
+.rarity-marvel { border-top: 4px solid var(--rarity-marvel); }
 
-/* Loader & Errors */
+/* Loader & Error */
 .loader, .error-box {
   text-align: center;
   padding: 80px 20px;
@@ -203,8 +211,8 @@ body {
 .spinner {
   width: 45px;
   height: 45px;
-  border: 4px solid #283042;
-  border-top-color: var(--accent-yellow);
+  border: 4px solid #1e2838;
+  border-top-color: var(--accent-gold);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 20px;
@@ -217,7 +225,7 @@ body {
 .error-box button {
   margin-top: 15px;
   padding: 10px 20px;
-  background: var(--accent-yellow);
+  background: var(--accent-gold);
   border: none;
   font-weight: bold;
   cursor: pointer;
