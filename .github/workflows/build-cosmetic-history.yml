@@ -1,0 +1,35 @@
+name: Build Cosmetic History
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/build-cosmetic-history.mjs"
+      - ".github/workflows/build-cosmetic-history.yml"
+      - "js/item.js"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download lifetime registry
+        run: curl -L --fail --retry 3 --retry-delay 2 https://raw.githubusercontent.com/Fortnite-Datamining/Fortnite-Datamining/main/data/items/registry.json -o /tmp/registry.json
+
+      - name: Build compact dataset
+        run: node scripts/build-cosmetic-history.mjs /tmp/registry.json data/cosmetic-history.json
+
+      - name: Commit generated dataset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cosmetic-history.json
+          git diff --cached --quiet && exit 0
+          git commit -m "data: update cosmetic shop history"
+          git push
