@@ -1,52 +1,717 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DFNS - Daily Fortnite Shop</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="DFNS — Daily Fortnite Shop. Discover today's Fortnite Item Shop, featured cosmetics, daily items and more."
+    >
+
+    <meta
+        name="theme-color"
+        content="#09090b"
+    >
+
+    <title>DFNS — Daily Fortnite Shop</title>
+
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+
+    <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
-  <header class="hero">
-    <div class="logo-box">
-      <h1 class="logo">DFNS</h1>
-      <span class="sub-logo">DAILY FORTNITE SHOP</span>
+    <!-- =========================================================
+         PAGE WRAPPER
+    ========================================================== -->
+
+    <div class="site-wrapper">
+
+        <!-- =====================================================
+             HEADER / NAVIGATION
+        ====================================================== -->
+
+        <header class="site-header" id="site-header">
+
+            <div class="container header-container">
+
+                <a
+                    href="index.html"
+                    class="brand"
+                    aria-label="DFNS Home"
+                >
+                    <span class="brand-mark">DFNS</span>
+                    <span class="brand-subtitle">
+                        Daily Fortnite Shop
+                    </span>
+                </a>
+
+                <nav
+                    class="main-navigation"
+                    id="main-navigation"
+                    aria-label="Main navigation"
+                >
+
+                    <a
+                        href="index.html"
+                        class="nav-link active"
+                        aria-current="page"
+                    >
+                        Home
+                    </a>
+
+                    <a
+                        href="shop.html"
+                        class="nav-link"
+                    >
+                        Item Shop
+                    </a>
+
+                    <a
+                        href="#featured"
+                        class="nav-link"
+                    >
+                        Featured
+                    </a>
+
+                    <a
+                        href="#daily"
+                        class="nav-link"
+                    >
+                        Daily
+                    </a>
+
+                </nav>
+
+                <div class="header-actions">
+
+                    <button
+                        class="header-search-button"
+                        type="button"
+                        aria-label="Open search"
+                        data-search-trigger
+                    >
+                        <span aria-hidden="true">⌕</span>
+                    </button>
+
+                    <button
+                        class="mobile-menu-button"
+                        type="button"
+                        aria-label="Open navigation menu"
+                        aria-expanded="false"
+                        aria-controls="main-navigation"
+                        data-mobile-menu
+                    >
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+             MAIN CONTENT
+        ====================================================== -->
+
+        <main id="main-content">
+
+            <!-- =================================================
+                 HERO
+            ================================================== -->
+
+            <section class="hero-section">
+
+                <div class="hero-background" aria-hidden="true">
+                    <div class="hero-glow hero-glow-one"></div>
+                    <div class="hero-glow hero-glow-two"></div>
+                    <div class="hero-grid"></div>
+                </div>
+
+                <div class="container hero-container">
+
+                    <div class="hero-content">
+
+                        <div class="hero-badge">
+                            <span class="status-dot"></span>
+                            <span>SHOP UPDATED DAILY</span>
+                        </div>
+
+                        <h1 class="hero-title">
+                            THE DAILY
+                            <span>FORTNITE SHOP</span>
+                        </h1>
+
+                        <p class="hero-description">
+                            Discover the latest Fortnite Item Shop
+                            cosmetics, featured items, daily offers
+                            and more — all in one place.
+                        </p>
+
+                        <div class="hero-actions">
+
+                            <a
+                                href="shop.html"
+                                class="button button-primary"
+                            >
+                                <span>View Item Shop</span>
+                                <span aria-hidden="true">→</span>
+                            </a>
+
+                            <a
+                                href="#featured"
+                                class="button button-secondary"
+                            >
+                                Explore Featured
+                            </a>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =============================================
+                         SHOP STATUS CARD
+                    ============================================== -->
+
+                    <aside
+                        class="shop-status-card"
+                        aria-label="Current shop information"
+                    >
+
+                        <div class="status-card-header">
+
+                            <span class="status-label">
+                                CURRENT SHOP
+                            </span>
+
+                            <span class="live-indicator">
+                                <span class="status-dot"></span>
+                                LIVE
+                            </span>
+
+                        </div>
+
+                        <div class="status-card-date">
+
+                            <span class="date-label">
+                                TODAY
+                            </span>
+
+                            <time
+                                class="shop-date"
+                                id="shop-date"
+                                datetime=""
+                            >
+                                Loading...
+                            </time>
+
+                        </div>
+
+                        <div class="status-card-divider"></div>
+
+                        <div class="status-card-footer">
+
+                            <div class="status-stat">
+                                <span class="stat-value" id="shop-item-count">
+                                    —
+                                </span>
+
+                                <span class="stat-label">
+                                    ITEMS
+                                </span>
+                            </div>
+
+                            <div class="status-stat">
+                                <span class="stat-value">
+                                    24H
+                                </span>
+
+                                <span class="stat-label">
+                                    REFRESH
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </aside>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 SEARCH
+            ================================================== -->
+
+            <section
+                class="search-section"
+                aria-label="Search Fortnite cosmetics"
+            >
+
+                <div class="container">
+
+                    <form
+                        class="search-form"
+                        id="cosmetic-search-form"
+                    >
+
+                        <div class="search-input-wrapper">
+
+                            <span
+                                class="search-icon"
+                                aria-hidden="true"
+                            >
+                                ⌕
+                            </span>
+
+                            <input
+                                type="search"
+                                id="cosmetic-search"
+                                name="search"
+                                class="search-input"
+                                placeholder="Search Fortnite cosmetics..."
+                                autocomplete="off"
+                            >
+
+                            <button
+                                type="submit"
+                                class="search-submit"
+                            >
+                                Search
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 FEATURED SHOP
+            ================================================== -->
+
+            <section
+                class="shop-section featured-section"
+                id="featured"
+            >
+
+                <div class="container">
+
+                    <div class="section-header">
+
+                        <div class="section-heading">
+
+                            <span class="section-eyebrow">
+                                TODAY'S SHOP
+                            </span>
+
+                            <h2 class="section-title">
+                                Featured
+                            </h2>
+
+                            <p class="section-description">
+                                The biggest and most notable items
+                                currently available in the shop.
+                            </p>
+
+                        </div>
+
+                        <a
+                            href="shop.html?section=featured"
+                            class="section-link"
+                        >
+                            View all
+                            <span aria-hidden="true">→</span>
+                        </a>
+
+                    </div>
+
+
+                    <!-- FEATURED ITEMS -->
+
+                    <div
+                        class="shop-grid featured-grid"
+                        id="featured-items"
+                        data-shop-section="featured"
+                        aria-live="polite"
+                    >
+
+                        <!--
+                            JavaScript will populate this section
+                            using Fortnite-API.com
+                        -->
+
+                        <article class="shop-card skeleton-card">
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </article>
+
+                        <article class="shop-card skeleton-card">
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </article>
+
+                        <article class="shop-card skeleton-card">
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </article>
+
+                        <article class="shop-card skeleton-card">
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </article>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 DAILY SHOP
+            ================================================== -->
+
+            <section
+                class="shop-section daily-section"
+                id="daily"
+            >
+
+                <div class="container">
+
+                    <div class="section-header">
+
+                        <div class="section-heading">
+
+                            <span class="section-eyebrow">
+                                EVERYDAY OFFERS
+                            </span>
+
+                            <h2 class="section-title">
+                                Daily
+                            </h2>
+
+                            <p class="section-description">
+                                Browse the cosmetics available in
+                                today's daily rotation.
+                            </p>
+
+                        </div>
+
+                        <a
+                            href="shop.html?section=daily"
+                            class="section-link"
+                        >
+                            View all
+                            <span aria-hidden="true">→</span>
+                        </a>
+
+                    </div>
+
+
+                    <div
+                        class="shop-grid daily-grid"
+                        id="daily-items"
+                        data-shop-section="daily"
+                        aria-live="polite"
+                    >
+
+                        <!--
+                            Daily items are loaded dynamically.
+                        -->
+
+                        <article class="shop-card skeleton-card">
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </article>
+
+                        <article class="shop-card skeleton-card">
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </article>
+
+                        <article class="shop-card skeleton-card">
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </article>
+
+                        <article class="shop-card skeleton-card">
+                            <div class="skeleton-image"></div>
+
+                            <div class="skeleton-content">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </article>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 CTA
+            ================================================== -->
+
+            <section class="cta-section">
+
+                <div class="container">
+
+                    <div class="cta-card">
+
+                        <div class="cta-content">
+
+                            <span class="section-eyebrow">
+                                EXPLORE MORE
+                            </span>
+
+                            <h2>
+                                Looking for something specific?
+                            </h2>
+
+                            <p>
+                                Search through Fortnite cosmetics
+                                and discover outfits, emotes,
+                                pickaxes, gliders and more.
+                            </p>
+
+                        </div>
+
+                        <a
+                            href="shop.html"
+                            class="button button-primary"
+                        >
+                            Browse Cosmetics
+                            <span aria-hidden="true">→</span>
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+        <!-- =====================================================
+             FOOTER
+        ====================================================== -->
+
+        <footer class="site-footer">
+
+            <div class="container">
+
+                <div class="footer-main">
+
+                    <div class="footer-brand">
+
+                        <a
+                            href="index.html"
+                            class="brand footer-logo"
+                        >
+                            <span class="brand-mark">DFNS</span>
+                            <span class="brand-subtitle">
+                                Daily Fortnite Shop
+                            </span>
+                        </a>
+
+                        <p class="footer-description">
+                            DFNS is a community-focused Fortnite
+                            Item Shop viewer built to make discovering
+                            daily cosmetics simple and fast.
+                        </p>
+
+                    </div>
+
+
+                    <div class="footer-column">
+
+                        <h3>Navigation</h3>
+
+                        <ul>
+                            <li>
+                                <a href="index.html">
+                                    Home
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="shop.html">
+                                    Item Shop
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#featured">
+                                    Featured
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#daily">
+                                    Daily
+                                </a>
+                            </li>
+                        </ul>
+
+                    </div>
+
+
+                    <div class="footer-column">
+
+                        <h3>DFNS</h3>
+
+                        <ul>
+                            <li>
+                                <a href="#">
+                                    About
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    Privacy
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    Terms
+                                </a>
+                            </li>
+                        </ul>
+
+                    </div>
+
+                </div>
+
+
+                <div class="footer-bottom">
+
+                    <p>
+                        © <span id="current-year"></span>
+                        DFNS. All rights reserved.
+                    </p>
+
+                    <p class="footer-disclaimer">
+                        DFNS is not affiliated with Epic Games.
+                        Fortnite is a trademark of Epic Games.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </footer>
+
     </div>
-    <div id="status-tag" class="status-tag">Winkel data laden...</div>
-  </header>
 
-  <div class="main-wrapper">
-    <section class="controls-bar">
-      <div class="search-wrapper">
-        <input type="text" id="search-input" placeholder="Zoek op naam...">
-      </div>
-      <div class="filter-wrapper">
-        <button class="filter-btn active" data-type="all">Alles</button>
-        <button class="filter-btn" data-type="outfit">Outfits</button>
-        <button class="filter-btn" data-type="emote">Emotes</button>
-        <button class="filter-btn" data-type="pickaxe">Pickaxes</button>
-        <button class="filter-btn" data-type="wrap">Wraps</button>
-      </div>
-    </section>
 
-    <main id="app">
-      <div id="loader" class="loader">
-        <div class="spinner"></div>
-        <p>Fortnite Item Shop ophalen...</p>
-      </div>
+    <!-- =========================================================
+         SEARCH OVERLAY
+    ========================================================== -->
 
-      <div id="error-box" class="error-box hidden">
-        <h2>Kan de shop niet laden</h2>
-        <p id="error-msg"></p>
-        <button onclick="loadShop()">Opnieuw proberen</button>
-      </div>
+    <div
+        class="search-overlay"
+        id="search-overlay"
+        aria-hidden="true"
+    >
 
-      <div id="shop-container" class="shop-grid"></div>
-    </main>
-  </div>
+        <div class="search-overlay-backdrop"></div>
 
-  <script src="script.js"></script>
+        <div class="search-overlay-content">
+
+            <button
+                type="button"
+                class="search-overlay-close"
+                aria-label="Close search"
+                data-search-close
+            >
+                ×
+            </button>
+
+            <span class="section-eyebrow">
+                DFNS SEARCH
+            </span>
+
+            <h2>
+                Find a cosmetic
+            </h2>
+
+            <form
+                class="overlay-search-form"
+                id="overlay-search-form"
+            >
+
+                <input
+                    type="search"
+                    name="search"
+                    placeholder="Search skins, emotes, pickaxes..."
+                    autocomplete="off"
+                >
+
+                <button type="submit">
+                    Search
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         SCRIPTS
+    ========================================================== -->
+
+    <script src="js/app.js" defer></script>
+
 </body>
 </html>
