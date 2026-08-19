@@ -22,41 +22,25 @@ const DFNSDatabase = {
             <div class="dfns-search-backdrop" data-db-close></div>
             <section class="dfns-search-panel" role="dialog" aria-modal="true" aria-label="Search Fortnite cosmetics">
                 <div class="dfns-search-head">
-                    <div>
-                        <span class="dfns-search-eyebrow">COSMETIC DATABASE</span>
-                        <h2>Search Fortnite Cosmetics</h2>
-                    </div>
+                    <div><span class="dfns-search-eyebrow">COSMETIC DATABASE</span><h2>Search Fortnite Cosmetics</h2></div>
                     <button type="button" class="dfns-search-close" data-db-close aria-label="Close search">×</button>
                 </div>
-                <div class="dfns-search-input-wrap">
-                    <span>⌕</span>
-                    <input id="dfns-database-input" type="search" autocomplete="off" placeholder="Search Fresh, Peely, Galaxy...">
-                    <kbd>ESC</kbd>
-                </div>
+                <div class="dfns-search-input-wrap"><span>⌕</span><input id="dfns-database-input" type="search" autocomplete="off" placeholder="Search Fresh, Peely, Galaxy..."><kbd>ESC</kbd></div>
                 <div id="dfns-database-status" class="dfns-search-status">Type at least 2 characters to search the full cosmetic database.</div>
                 <div id="dfns-database-results" class="dfns-search-results"></div>
             </section>`;
         document.body.appendChild(overlay);
-
-        overlay.addEventListener("click", event => {
-            if (event.target.closest("[data-db-close]")) this.close();
-        });
-
+        overlay.addEventListener("click", event => { if (event.target.closest("[data-db-close]")) this.close(); });
         const input = overlay.querySelector("#dfns-database-input");
         input.addEventListener("input", () => this.onInput(input.value));
-        input.addEventListener("keydown", event => {
-            if (event.key === "Escape") this.close();
-        });
+        input.addEventListener("keydown", event => { if (event.key === "Escape") this.close(); });
     },
 
     bindTriggers() {
         document.querySelectorAll("[data-search-trigger], .header-search-button").forEach(trigger => {
             if (trigger.dataset.dbBound === "true") return;
             trigger.dataset.dbBound = "true";
-            trigger.addEventListener("click", event => {
-                event.preventDefault();
-                this.open();
-            });
+            trigger.addEventListener("click", event => { event.preventDefault(); this.open(); });
         });
     },
 
@@ -84,21 +68,14 @@ const DFNSDatabase = {
         clearTimeout(this.timer);
         const query = value.trim();
         const status = document.querySelector("#dfns-database-status");
-        if (query.length < 2) {
-            if (status) status.textContent = "Type at least 2 characters to search the full cosmetic database.";
-            this.render([]);
-            return;
-        }
+        if (query.length < 2) { if (status) status.textContent = "Type at least 2 characters to search the full cosmetic database."; this.render([]); return; }
         if (status) status.textContent = "Searching Fortnite cosmetics…";
         this.timer = setTimeout(() => this.search(query), 260);
     },
 
     async search(query) {
         const key = query.toLowerCase();
-        if (this.cache.has(key)) {
-            this.render(this.cache.get(key));
-            return;
-        }
+        if (this.cache.has(key)) { this.render(this.cache.get(key)); return; }
         const requestId = ++this.activeRequest;
         try {
             const url = `${this.endpoint}?name=${encodeURIComponent(query)}&matchMethod=contains&language=en&searchLanguage=en`;
@@ -107,14 +84,12 @@ const DFNSDatabase = {
             const json = await response.json();
             const items = Array.isArray(json?.data) ? json.data : (json?.data ? [json.data] : []);
             if (requestId !== this.activeRequest) return;
-            this.cache.set(key, items);
-            this.render(items);
+            this.cache.set(key, items); this.render(items);
         } catch (error) {
             if (requestId !== this.activeRequest) return;
             const status = document.querySelector("#dfns-database-status");
             if (status) status.textContent = "The cosmetic database could not be reached. Try again in a moment.";
-            this.render([]);
-            console.error("DFNS cosmetic database:", error);
+            this.render([]); console.error("DFNS cosmetic database:", error);
         }
     },
 
@@ -122,32 +97,57 @@ const DFNSDatabase = {
         const results = document.querySelector("#dfns-database-results");
         const status = document.querySelector("#dfns-database-status");
         if (!results) return;
-        if (!items.length) {
-            results.innerHTML = "";
-            if (document.querySelector("#dfns-database-input")?.value.trim().length >= 2 && status) {
-                status.textContent = "No cosmetics found. Try another name.";
-            }
-            return;
-        }
+        if (!items.length) { results.innerHTML = ""; if (document.querySelector("#dfns-database-input")?.value.trim().length >= 2 && status) status.textContent = "No cosmetics found. Try another name."; return; }
         if (status) status.textContent = `${items.length} cosmetic${items.length === 1 ? "" : "s"} found`;
         results.innerHTML = items.slice(0, 30).map(item => {
             const image = item.images?.icon || item.images?.featured || item.images?.full_background || "";
             const type = item.type?.displayValue || item.type?.value || item.displayType || "Cosmetic";
             const rarity = item.rarity?.displayValue || item.rarity?.value || "Unknown";
-            return `<a class="dfns-search-result" href="item.html?id=${encodeURIComponent(item.id)}">
-                <div class="dfns-search-result-image">${image ? `<img src="${this.escape(image)}" alt="" loading="lazy">` : ""}</div>
-                <div class="dfns-search-result-copy"><strong>${this.escape(item.name || "Unknown Item")}</strong><span>${this.escape(type)} · ${this.escape(rarity)}</span></div>
-                <span class="dfns-search-arrow">→</span>
-            </a>`;
+            return `<a class="dfns-search-result" href="item.html?id=${encodeURIComponent(item.id)}"><div class="dfns-search-result-image">${image ? `<img src="${this.escape(image)}" alt="" loading="lazy">` : ""}</div><div class="dfns-search-result-copy"><strong>${this.escape(item.name || "Unknown Item")}</strong><span>${this.escape(type)} · ${this.escape(rarity)}</span></div><span class="dfns-search-arrow">→</span></a>`;
         }).join("");
     },
 
-    escape(value) {
-        const node = document.createElement("div");
-        node.textContent = value ?? "";
-        return node.innerHTML;
-    }
+    escape(value) { const node = document.createElement("div"); node.textContent = value ?? ""; return node.innerHTML; }
 };
 
-document.addEventListener("DOMContentLoaded", () => DFNSDatabase.init());
+/* Initialise the database first, then repair the navbar after the legacy app.js active-state code runs. */
+document.addEventListener("DOMContentLoaded", () => {
+    DFNSDatabase.init();
+
+    const nav = document.querySelector(".main-navigation");
+    if (!nav) return;
+
+    const file = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+    const isHome = file === "" || file === "index.html";
+    const isShop = file === "shop.html";
+    const isItem = file === "item.html";
+
+    nav.querySelectorAll(".nav-link").forEach(link => {
+        link.classList.remove("active");
+        link.removeAttribute("aria-current");
+    });
+
+    const home = nav.querySelector('[data-nav="home"]');
+    const shop = nav.querySelector('[data-nav="shop"]');
+    const cosmetics = nav.querySelector('[data-nav="cosmetics"]');
+
+    if (isHome) {
+        home?.classList.add("active");
+        home?.setAttribute("aria-current", "page");
+    } else if (isShop || isItem) {
+        shop?.classList.add("active");
+        shop?.setAttribute("aria-current", "page");
+    }
+
+    cosmetics?.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        nav.querySelectorAll(".nav-link").forEach(link => {
+            link.classList.remove("active");
+            link.removeAttribute("aria-current");
+        });
+        DFNSDatabase.open();
+    });
+});
+
 window.DFNSDatabase = DFNSDatabase;
