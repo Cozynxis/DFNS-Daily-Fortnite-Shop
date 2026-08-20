@@ -50,7 +50,8 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/dfns-release.keystore
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/dfns-release.keystore
+          test -s android/app/dfns-release.keystore
           cat > android/keystore.properties <<EOF
           storeFile=dfns-release.keystore
           storePassword=$ANDROID_KEYSTORE_PASSWORD
