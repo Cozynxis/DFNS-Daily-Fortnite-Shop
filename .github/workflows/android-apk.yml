@@ -2,7 +2,9 @@ name: Build DFNS Android APK
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - automation/android-build
   workflow_dispatch:
 
 permissions:
