@@ -1,26 +1,315 @@
 "use strict";
-const API="https://fortnite-api.com/v2";
-const HISTORY_RAW="https://raw.githubusercontent.com/Fortnite-Datamining/Fortnite-Datamining/history/shop";
-const REGISTRY_RAW="https://raw.githubusercontent.com/Fortnite-Datamining/Fortnite-Datamining/main/data/items/registry.json";
-const DFNSItem={
- item:null,shopEntry:null,historyRecord:null,historicalPrice:null,imageMode:"featured",favoriteKey:"dfns-favorites",registryRecord:null,
- async init(){this.bind();const p=new URLSearchParams(location.search),id=p.get("id")||p.get("item");if(!id)return this.showError("No cosmetic was selected.");try{this.item=await this.fetchCosmetic(id);if(!this.item)throw Error("Cosmetic not found");await Promise.allSettled([this.loadTimeline(id),this.loadShop(id),this.loadRegistry(id)]);await this.loadHistoricalPrice();this.render()}catch(e){console.error("DFNS item",e);this.showError(e?.message||"Unable to load cosmetic")}},
- async json(url){const r=await fetch(url,{cache:"no-store",headers:{Accept:"application/json"}});if(!r.ok)throw Error(`Request ${r.status}`);return r.json()},
- async fetchCosmetic(id){for(const u of [`${API}/cosmetics/br/${encodeURIComponent(id)}?language=en`,`${API}/cosmetics/br/search/ids?language=en&id=${encodeURIComponent(id)}`,`${API}/cosmetics/br/search?language=en&searchLanguage=en&matchMethod=full&id=${encodeURIComponent(id)}`]){try{const j=await this.json(u),d=j?.data,a=Array.isArray(d)?d:(d?[d]:[]),x=a.find(v=>String(v?.id||"").toLowerCase()===String(id).toLowerCase())||a[0];if(x)return x}catch(e){console.warn("DFNS cosmetic:",e)}}return null},
- async loadTimeline(id){const dates=[],add=v=>{const d=this.toDate(v);if(d)dates.push(d)};const absorb=x=>{if(!x)return;add(x.lastAppearance);add(x.last_appearance);add(x.lastSeen);add(x.last_seen);if(Array.isArray(x.shopHistory))x.shopHistory.forEach(add);if(Array.isArray(x.shop_history))x.shop_history.forEach(add)};absorb(this.item);for(const u of [`${API}/cosmetics/br/search/ids?language=en&id=${encodeURIComponent(id)}`,`${API}/cosmetics/br/search/all?language=en&searchLanguage=en&matchMethod=full&id=${encodeURIComponent(id)}`]){try{const j=await this.json(u),d=j?.data,a=Array.isArray(d)?d:(d?[d]:[]),x=a.find(v=>String(v?.id||"").toLowerCase()===String(id).toLowerCase())||a[0];if(x){this.item={...this.item,...x};absorb(x)}if(dates.length)break}catch(e){console.warn("DFNS timeline fallback:",e)}}if(!dates.length){try{const j=await this.json(`${API}/cosmetics/br?language=en`),a=Array.isArray(j?.data)?j.data:[],x=a.find(v=>String(v?.id||"").toLowerCase()===String(id).toLowerCase());if(x){this.item={...this.item,...x};absorb(x)}}catch(e){console.warn("DFNS cosmetics list:",e)}}
-  /* Fortnite-API also exposes unseenFor: when lastAppearance is missing, derive the date from it. */
-  if(!dates.length&&Number.isFinite(Number(this.item?.unseenFor))){const days=Math.max(0,Number(this.item.unseenFor));const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-days);dates.push(d)}
-  const unique=[...new Map(dates.map(d=>[this.isoDay(d),d])).values()].sort((a,b)=>b-a);const added=this.toDate(this.item?.added);this.historyRecord={firstSeen:added||unique.at(-1)||null,lastSeen:unique[0]||null,appearances:unique}},
- async loadShop(id){try{const j=await this.json(`${API}/shop`),entries=Array.isArray(j?.data?.entries)?j.data.entries:[],wanted=String(id).toLowerCase();for(const e of entries){const child=(e.brItems||[]).find(i=>String(i?.id||"").toLowerCase()===wanted);if(child){this.shopEntry=e;this.historicalPrice=this.readPrice(e)??this.readPrice(child);return}}}catch(e){console.warn("DFNS shop:",e)}},
- async loadRegistry(id){try{const r=await fetch(REGISTRY_RAW,{cache:"force-cache"});if(!r.ok)return;const data=await r.json();const wanted=String(id).toLowerCase();this.registryRecord=data?.[id]||data?.[wanted]||data?.items?.[id]||data?.items?.[wanted]||null;if(this.registryRecord)return;const walk=v=>{if(this.registryRecord||!v||typeof v!=="object")return;if(Array.isArray(v)){for(const x of v)walk(x);return}for(const [k,x] of Object.entries(v)){if(String(k).toLowerCase()===wanted||String(x?.id||x?.itemId||"").toLowerCase()===wanted){this.registryRecord=x;return}if(x&&typeof x==="object")walk(x);if(this.registryRecord)return}};walk(data)}catch(e){console.warn("DFNS registry:",e)}},
- async loadHistoricalPrice(){if(this.historicalPrice!=null)return;const id=this.item?.id,last=this.historyRecord?.lastSeen;if(!id)return;
-  const candidates=[];const addCandidate=(date,price)=>{const d=this.toDate(date),p=this.number(price);if(d&&p!=null)candidates.push({d,p})};
-  const walk=v=>{if(!v||typeof v!=="object")return;if(Array.isArray(v)){v.forEach(walk);return}const directDate=v.date??v.day??v.shopDate??v.shop_date??v.timestamp??v.inDate??v.in_date;const directPrice=this.readPrice(v);if(directDate!=null&&directPrice!=null)addCandidate(directDate,directPrice);for(const [k,x] of Object.entries(v)){if(/^\d{4}-\d{2}-\d{2}$/.test(k)){if(typeof x==="number"||typeof x==="string")addCandidate(k,x);else if(x&&typeof x==="object")addCandidate(k,this.readPrice(x))}walk(x)}};
-  walk(this.registryRecord);if(candidates.length){candidates.sort((a,b)=>Math.abs(a.d-last)-Math.abs(b.d-last));this.historicalPrice=candidates[0].p;return}
-  if(!last)return;try{const r=await fetch(`${HISTORY_RAW}/${this.isoDay(last)}.json`,{cache:"force-cache"});if(r.ok)this.historicalPrice=this.findPrice(await r.json(),id)}catch(e){console.warn("DFNS history price:",e)}},
- findPrice(snapshot,id){const wanted=String(id).toLowerCase(),prices=[];const scan=v=>{if(!v||typeof v!=="object")return;if(Array.isArray(v)){v.forEach(scan);return}if(Array.isArray(v.brItems)){for(const i of v.brItems)if(String(i?.id||"").toLowerCase()===wanted){const p=this.readPrice(i)??this.readPrice(v);if(p!=null)prices.push(p)}}if(String(v.id||v.itemId||v.cosmeticId||"").toLowerCase()===wanted){const p=this.readPrice(v);if(p!=null)prices.push(p)}Object.values(v).forEach(scan)};scan(snapshot);return prices[0]??null},
- readPrice(v){if(!v||typeof v!=="object")return null;for(const k of ["finalPrice","final_price","regularPrice","regular_price","price","vbucks","vBucks","cost"]){const n=this.number(v[k]);if(n!=null)return n}return null},
- render(){const i=this.item||{},n=i.name||i.displayName||"Unknown Item",type=i.type?.displayValue||i.displayType||"Cosmetic",rarity=i.rarity?.displayValue||i.displayRarity||"Unknown",last=this.historyRecord?.lastSeen||this.toDate(i.lastAppearance),price=this.historicalPrice,available=!!this.shopEntry,lastText=last?`${this.formatDate(last)} · ${this.relative(last)}`:"No shop history available";this.text("#item-name",n);this.text("#breadcrumb-item-name",n);this.text("#item-description",i.description||i.shortDescription||"No description available for this cosmetic.");this.text("#item-type",type);this.text("#item-rarity",rarity);this.text("#detail-name",n);this.text("#detail-type",type);this.text("#detail-rarity",rarity);this.text("#detail-id",i.id||"—");this.text("#detail-introduction",i.introduction?.text||i.introduction?.chapter||i.introduction?.season||"—");this.text("#detail-added",this.formatDate(this.toDate(i.added)||this.historyRecord?.firstSeen));this.text("#detail-last-seen",lastText);this.text("#item-last-seen-date",lastText);this.text("#detail-set",i.set?.text||i.set?.name||"—");this.text("#detail-series",i.series?.name||i.series?.value||"—");this.text("#detail-set-part",i.set?.partOfSet||i.set?.text||"—");this.text("#detail-shop-status",available?"In today's shop":"Not currently listed");this.text("#item-price",price==null?"—":price.toLocaleString());this.text("#availability-text",available?"Available in today's shop":last?"Previously available in the Item Shop":"Not currently in the shop");this.text("#availability-date",available?"Live shop data":last?`Last seen ${this.formatDate(last)}`:"—");this.setImage();this.updateFavorite(this.isFavorite(i.id));document.title=`${n} — DFNS`;document.body.classList.add("item-ready")},
- setImage(){const i=this.item||{},src=this.imageMode==="icon"?(i.images?.icon||i.images?.featured):(i.images?.featured||i.images?.full_background||i.images?.icon);const img=document.querySelector("#item-main-image");if(img&&src){img.src=src;img.alt=i.name||"Fortnite cosmetic"}const bg=document.querySelector("#item-hero-background");if(bg&&src)bg.style.backgroundImage=`linear-gradient(90deg,rgba(7,7,10,.18),rgba(7,7,10,.88)),url("${String(src).replaceAll('"','\\"')}")`},
- toDate(v){if(v==null||v==="")return null;if(v instanceof Date)return Number.isNaN(v.getTime())?null:v;if(typeof v==="number"){const d=new Date(v<10000000000?v*1000:v);return Number.isNaN(d.getTime())?null:d}if(typeof v==="object")return this.toDate(v.timestamp??v.date??v.value??v.datetime);if(typeof v==="string"&&/^\d+(\.\d+)?$/.test(v.trim()))return this.toDate(Number(v));const d=new Date(v);return Number.isNaN(d.getTime())?null:d},isoDay(d){return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}`},number(v){if(v==null||v==="")return null;const n=Number(String(v).replace(/[^0-9.-]/g,""));return Number.isFinite(n)&&n>=0?n:null},formatDate(d){return d?d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"Not available"},relative(d){const a=new Date(),b=new Date(d),aa=Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()),bb=Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()),n=Math.max(0,Math.floor((aa-bb)/86400000));return n===0?"today":n===1?"1 day ago":`${n} days ago`},getFavorites(){try{const a=JSON.parse(localStorage.getItem(this.favoriteKey)||"[]");return new Set(Array.isArray(a)?a:[])}catch{return new Set()}},isFavorite(id){return this.getFavorites().has(id)},updateFavorite(on){const b=document.querySelector("#favorite-button");if(!b)return;const i=b.querySelector(".favorite-icon"),t=b.querySelector(".favorite-text");if(i)i.textContent=on?"♥":"♡";if(t)t.textContent=on?"Remove from Favorites":"Add to Favorites";b.classList.toggle("active",on)},text(s,v){const e=document.querySelector(s);if(e)e.textContent=v??"—"},showError(m){console.error("DFNS item error:",m);this.text("#item-name","Unable to load cosmetic");this.text("#item-description",m||"Please try again.")},bind(){document.querySelectorAll("[data-image-type]").forEach(b=>b.addEventListener("click",()=>{this.imageMode=b.dataset.imageType||"featured";document.querySelectorAll("[data-image-type]").forEach(x=>x.classList.toggle("active",x===b));this.setImage()}));document.querySelector("#favorite-button")?.addEventListener("click",()=>{const id=this.item?.id;if(!id)return;const f=this.getFavorites(),on=!f.has(id);on?f.add(id):f.delete(id);localStorage.setItem(this.favoriteKey,JSON.stringify([...f]));this.updateFavorite(on);window.DFNSAuth?.syncFavorite?.(String(id),on)});document.querySelector("#share-button")?.addEventListener("click",async()=>{try{if(navigator.share)await navigator.share({title:document.title,text:`Check out ${this.item?.name||"this Fortnite cosmetic"} on DFNS.`,url:location.href});else await navigator.clipboard.writeText(location.href)}catch{}})}};
-document.addEventListener("DOMContentLoaded",()=>DFNSItem.init());window.DFNSItem=DFNSItem;
+
+const API = "https://fortnite-api.com/v2";
+
+const DFNSItem = {
+  item: null,
+  shopEntry: null,
+  historyRecord: null,
+  historicalPrice: null,
+  imageMode: "featured",
+  favoriteKey: "dfns-favorites",
+
+  async init() {
+    this.bind();
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id") || params.get("item");
+    if (!id) return this.showError("No cosmetic was selected.");
+
+    try {
+      this.item = await this.fetchCosmetic(id);
+      if (!this.item) throw new Error("Cosmetic not found.");
+
+      // Render the cosmetic immediately. Do not wait for optional shop data.
+      this.buildTimeline();
+      this.render();
+
+      // Price/shop information is independent from Last Seen.
+      await this.loadShopPrice(id);
+      this.render();
+    } catch (error) {
+      console.error("DFNS item error:", error);
+      this.showError(error?.message || "Unable to load cosmetic.");
+    }
+  },
+
+  async json(url) {
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) throw new Error(`API request failed (${response.status})`);
+    return response.json();
+  },
+
+  async fetchCosmetic(id) {
+    const urls = [
+      `${API}/cosmetics/br/${encodeURIComponent(id)}?language=en`,
+      `${API}/cosmetics/br/search/ids?language=en&id=${encodeURIComponent(id)}`,
+      `${API}/cosmetics/br/search?language=en&searchLanguage=en&matchMethod=full&id=${encodeURIComponent(id)}`
+    ];
+
+    for (const url of urls) {
+      try {
+        const json = await this.json(url);
+        const data = Array.isArray(json?.data) ? json.data : (json?.data ? [json.data] : []);
+        const exact = data.find(x => String(x?.id || "").toLowerCase() === String(id).toLowerCase());
+        if (exact) return exact;
+        if (data[0]) return data[0];
+      } catch (error) {
+        console.warn("DFNS cosmetic endpoint failed:", url, error);
+      }
+    }
+    return null;
+  },
+
+  buildTimeline() {
+    const dates = [];
+    const add = value => {
+      const date = this.toDate(value);
+      if (date) dates.push(date);
+    };
+
+    // Fortnite-API documents lastAppearance as the item's last shop appearance.
+    add(this.item?.lastAppearance);
+    add(this.item?.last_appearance);
+    add(this.item?.lastSeen);
+    add(this.item?.last_seen);
+
+    // Some API responses also expose the complete shop history.
+    for (const key of ["shopHistory", "shop_history"]) {
+      if (Array.isArray(this.item?.[key])) this.item[key].forEach(add);
+    }
+
+    // Keep a deterministic fallback from unseenFor rather than displaying "No shop history".
+    if (!dates.length && Number.isFinite(Number(this.item?.unseenFor))) {
+      const days = Math.max(0, Number(this.item.unseenFor));
+      const fallback = new Date();
+      fallback.setHours(12, 0, 0, 0);
+      fallback.setDate(fallback.getDate() - days);
+      dates.push(fallback);
+    }
+
+    const unique = [...new Map(dates.map(date => [this.isoDay(date), date])).values()]
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    const added = this.toDate(this.item?.added);
+    this.historyRecord = {
+      firstSeen: added || unique.at(-1) || null,
+      lastSeen: unique[0] || null,
+      appearances: unique
+    };
+  },
+
+  async loadShopPrice(id) {
+    const wanted = String(id).toLowerCase();
+    const urls = [`${API}/shop/br`, `${API}/shop`];
+
+    for (const url of urls) {
+      try {
+        const json = await this.json(url);
+        const data = json?.data || {};
+        const sections = [
+          data.featured,
+          data.daily,
+          data.specialFeatured,
+          data.specialDaily,
+          data.votes,
+          data.voteWinners
+        ].filter(Boolean);
+
+        const entries = [];
+        if (Array.isArray(data.entries)) entries.push(...data.entries);
+        for (const section of sections) {
+          if (Array.isArray(section.entries)) entries.push(...section.entries);
+        }
+
+        for (const entry of entries) {
+          const items = Array.isArray(entry?.brItems) ? entry.brItems : [];
+          const match = items.find(item => String(item?.id || "").toLowerCase() === wanted);
+          if (match) {
+            this.shopEntry = entry;
+            this.historicalPrice = this.readPrice(entry);
+            if (this.historicalPrice == null) this.historicalPrice = this.readPrice(match);
+            if (this.historicalPrice != null) return;
+          }
+        }
+      } catch (error) {
+        console.warn("DFNS shop endpoint failed:", url, error);
+      }
+    }
+
+    // Cosmetic metadata sometimes contains its known V-Bucks price.
+    const metadataPrice = this.readPrice(this.item);
+    if (metadataPrice != null) this.historicalPrice = metadataPrice;
+  },
+
+  readPrice(value) {
+    if (!value || typeof value !== "object") return null;
+    for (const key of ["finalPrice", "regularPrice", "price", "vbucks", "vBucks", "cost"]) {
+      const number = this.number(value[key]);
+      if (number != null) return number;
+    }
+    return null;
+  },
+
+  render() {
+    const item = this.item || {};
+    const name = item.name || item.displayName || "Unknown Item";
+    const type = item.type?.displayValue || item.displayType || "Cosmetic";
+    const rarity = item.rarity?.displayValue || item.displayRarity || "Unknown";
+    const last = this.historyRecord?.lastSeen || this.toDate(item.lastAppearance);
+    const price = this.historicalPrice;
+    const available = !!this.shopEntry;
+    const lastText = last
+      ? `${this.formatDate(last)} · ${this.relative(last)}`
+      : "Not available";
+
+    this.text("#item-name", name);
+    this.text("#breadcrumb-item-name", name);
+    this.text("#item-description", item.description || item.shortDescription || "No description available for this cosmetic.");
+    this.text("#item-type", type);
+    this.text("#item-rarity", rarity);
+
+    this.text("#detail-name", name);
+    this.text("#detail-type", type);
+    this.text("#detail-rarity", rarity);
+    this.text("#detail-id", item.id || "—");
+    this.text("#detail-introduction", item.introduction?.text || item.introduction?.chapter || item.introduction?.season || "—");
+    this.text("#detail-added", this.formatDate(this.toDate(item.added)));
+    this.text("#detail-last-seen", lastText);
+    this.text("#item-last-seen-date", lastText);
+    this.text("#detail-set", item.set?.text || item.set?.name || "—");
+    this.text("#detail-series", item.series?.name || item.series?.value || "—");
+    this.text("#detail-set-part", item.set?.partOfSet || item.set?.text || "—");
+    this.text("#detail-shop-status", available ? "In today's shop" : "Not currently listed");
+
+    this.text("#item-price", price == null ? "—" : price.toLocaleString());
+    this.text("#availability-text", available ? "Available in today's shop" : last ? "Previously available in the Item Shop" : "Not currently in the shop");
+    this.text("#availability-date", available ? "Live shop data" : last ? `Last seen ${this.formatDate(last)}` : "—");
+
+    this.setImage();
+    this.updateFavorite(this.isFavorite(item.id));
+    document.title = `${name} — DFNS`;
+    document.body.classList.add("item-ready");
+  },
+
+  setImage() {
+    const item = this.item || {};
+    const source = this.imageMode === "icon"
+      ? (item.images?.icon || item.images?.featured)
+      : (item.images?.featured || item.images?.full_background || item.images?.icon);
+
+    const image = document.querySelector("#item-main-image");
+    if (image && source) {
+      image.src = source;
+      image.alt = item.name || "Fortnite cosmetic";
+    }
+
+    const background = document.querySelector("#item-hero-background");
+    if (background && source) {
+      background.style.backgroundImage = `linear-gradient(90deg,rgba(7,7,10,.18),rgba(7,7,10,.88)),url("${String(source).replaceAll('"', '\\"')}")`;
+    }
+  },
+
+  toDate(value) {
+    if (value == null || value === "") return null;
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+    if (typeof value === "number") {
+      const date = new Date(value < 10000000000 ? value * 1000 : value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    if (typeof value === "object") return this.toDate(value.timestamp ?? value.date ?? value.value ?? value.datetime);
+    if (typeof value === "string" && /^\d+(\.\d+)?$/.test(value.trim())) return this.toDate(Number(value));
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  },
+
+  isoDay(date) {
+    return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+  },
+
+  number(value) {
+    if (value == null || value === "") return null;
+    const number = Number(String(value).replace(/[^0-9.-]/g, ""));
+    return Number.isFinite(number) && number >= 0 ? number : null;
+  },
+
+  formatDate(date) {
+    return date ? date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Not available";
+  },
+
+  relative(date) {
+    const now = new Date();
+    const target = new Date(date);
+    const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const then = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+    const days = Math.max(0, Math.floor((today - then) / 86400000));
+    return days === 0 ? "today" : days === 1 ? "1 day ago" : `${days} days ago`;
+  },
+
+  getFavorites() {
+    try {
+      const value = JSON.parse(localStorage.getItem(this.favoriteKey) || "[]");
+      return new Set(Array.isArray(value) ? value : []);
+    } catch {
+      return new Set();
+    }
+  },
+
+  isFavorite(id) {
+    return this.getFavorites().has(id);
+  },
+
+  updateFavorite(active) {
+    const button = document.querySelector("#favorite-button");
+    if (!button) return;
+    const icon = button.querySelector(".favorite-icon");
+    const text = button.querySelector(".favorite-text");
+    if (icon) icon.textContent = active ? "♥" : "♡";
+    if (text) text.textContent = active ? "Remove from Favorites" : "Add to Favorites";
+    button.classList.toggle("active", active);
+  },
+
+  text(selector, value) {
+    const element = document.querySelector(selector);
+    if (element) element.textContent = value ?? "—";
+  },
+
+  showError(message) {
+    console.error("DFNS item error:", message);
+    this.text("#item-name", "Unable to load cosmetic");
+    this.text("#item-description", message || "Please try again.");
+  },
+
+  bind() {
+    document.querySelectorAll("[data-image-type]").forEach(button => {
+      button.addEventListener("click", () => {
+        this.imageMode = button.dataset.imageType || "featured";
+        document.querySelectorAll("[data-image-type]").forEach(x => x.classList.toggle("active", x === button));
+        this.setImage();
+      });
+    });
+
+    document.querySelector("#favorite-button")?.addEventListener("click", () => {
+      const id = this.item?.id;
+      if (!id) return;
+      const favorites = this.getFavorites();
+      const active = !favorites.has(id);
+      active ? favorites.add(id) : favorites.delete(id);
+      localStorage.setItem(this.favoriteKey, JSON.stringify([...favorites]));
+      this.updateFavorite(active);
+      window.DFNSAuth?.syncFavorite?.(String(id), active);
+    });
+
+    document.querySelector("#share-button")?.addEventListener("click", async () => {
+      try {
+        if (navigator.share) await navigator.share({ title: document.title, text: `Check out ${this.item?.name || "this Fortnite cosmetic"} on DFNS.`, url: location.href });
+        else await navigator.clipboard.writeText(location.href);
+      } catch {}
+    });
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => DFNSItem.init());
+window.DFNSItem = DFNSItem;
