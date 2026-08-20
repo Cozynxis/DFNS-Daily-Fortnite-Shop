@@ -1,53 +1,46 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#07070a">
-  <meta name="description" content="DFNS — This page could not be found.">
-  <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
-  <title>404 — DFNS</title>
-  <style>
-    :root{--bg:#07070a;--surface:#101014;--surface2:#17171d;--border:rgba(255,255,255,.09);--border2:rgba(255,255,255,.16);--text:#f7f7fa;--muted:#a3a3ad;--dim:#6f707b;--accent:#7c5cff;--accent2:#a48cff;--green:#4ade80}
-    *{box-sizing:border-box;margin:0;padding:0}
-    html{min-height:100%;scroll-behavior:smooth}
-    body{min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:grid;place-items:center;overflow:hidden}
-    body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% -10%,rgba(124,92,255,.15),transparent 38%)}
-    .page{position:relative;width:min(100% - 40px,900px);text-align:center;padding:50px 20px;animation:pageIn .7s cubic-bezier(.2,.8,.2,1) both}
-    .grid{position:fixed;inset:0;opacity:.11;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:56px 56px;mask-image:linear-gradient(to bottom,#000,transparent 90%);pointer-events:none}
-    .glow{position:fixed;width:520px;height:520px;border-radius:50%;filter:blur(70px);background:rgba(124,92,255,.13);pointer-events:none;animation:float 7s ease-in-out infinite}
-    .glow.one{top:-300px;right:-180px}.glow.two{bottom:-330px;left:-220px;animation-delay:-3s}
-    .brand{display:inline-flex;align-items:baseline;gap:9px;color:var(--text);text-decoration:none;margin-bottom:45px;animation:drop .8s .05s both}
-    .brand-mark{font-size:26px;font-weight:950;letter-spacing:-.07em}.brand-subtitle{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:.04em}
-    .code{font-size:clamp(100px,20vw,190px);line-height:.78;letter-spacing:-.09em;font-weight:950;color:transparent;background:linear-gradient(135deg,#fff 0%,var(--accent2) 45%,var(--accent) 100%);background-clip:text;-webkit-background-clip:text;position:relative;display:inline-block;animation:codeIn .9s cubic-bezier(.16,1,.3,1) both;text-shadow:0 20px 80px rgba(124,92,255,.18)}
-    .code:after{content:"404";position:absolute;inset:0;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.05);transform:translate(7px,7px);z-index:-1}
-    .eyebrow{display:inline-flex;align-items:center;gap:9px;margin-top:35px;padding:8px 13px;border:1px solid rgba(251,113,133,.2);border-radius:999px;background:rgba(251,113,133,.055);color:#fb7185;font-size:10px;font-weight:900;letter-spacing:.12em;animation:fadeUp .7s .25s both}
-    .dot{width:7px;height:7px;border-radius:50%;background:#fb7185;box-shadow:0 0 14px rgba(251,113,133,.8);animation:pulse 1.8s infinite}
-    h1{margin-top:22px;font-size:clamp(30px,5vw,52px);line-height:1;letter-spacing:-.055em;font-weight:950;animation:fadeUp .7s .34s both}
-    .description{max-width:570px;margin:18px auto 0;color:var(--muted);font-size:15px;line-height:1.75;animation:fadeUp .7s .42s both}
-    .path{display:inline-block;max-width:min(90vw,600px);margin-top:16px;padding:8px 12px;border:1px solid var(--border);border-radius:9px;background:rgba(255,255,255,.025);color:var(--dim);font:11px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:fadeUp .7s .49s both}
-    .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:30px;animation:fadeUp .7s .56s both}
-    .button{min-height:46px;padding:0 18px;border-radius:11px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:850;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:.2s}
-    .button:hover{transform:translateY(-3px);border-color:var(--border2);background:var(--surface2)}
-    .button.primary{border-color:transparent;background:var(--accent);box-shadow:0 12px 35px rgba(124,92,255,.2)}.button.primary:hover{background:var(--accent2)}
-    .hint{margin-top:38px;color:var(--dim);font-size:10px;letter-spacing:.04em;animation:fadeUp .7s .64s both}
-    @keyframes pageIn{from{opacity:0}to{opacity:1}}@keyframes codeIn{from{opacity:0;transform:translateY(30px) scale(.92);filter:blur(12px)}to{opacity:1;transform:none;filter:blur(0)}}@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes drop{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}@keyframes float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,25px,0)}}@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.72)}}
-    @media(max-width:600px){.page{padding:35px 10px}.brand{margin-bottom:32px}.description{font-size:14px}.path{max-width:calc(100vw - 60px)}.hint{margin-top:30px}}
-    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08090f">
+<meta name="description" content="DFNS — You got lost in the storm.">
+<link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+<title>404 — Lost in the Storm | DFNS</title>
+<style>
+:root{--bg:#07080d;--text:#f8f9ff;--muted:#a7adbd;--dim:#737b8e;--purple:#7c5cff;--purple2:#b29cff;--cyan:#63d7ff;--storm:#171b29;--line:rgba(255,255,255,.09)}
+*{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}body{min-height:100vh;background:radial-gradient(circle at 50% 15%,#19142d 0,#0b0c14 36%,var(--bg) 72%);color:var(--text);display:grid;place-items:center;overflow:hidden}
+body:before{content:"";position:fixed;inset:-20%;pointer-events:none;background:conic-gradient(from 180deg at 50% 50%,transparent 0 20%,rgba(124,92,255,.08) 28%,transparent 38% 64%,rgba(99,215,255,.055) 72%,transparent 82%);animation:spin 24s linear infinite}
+.grid{position:fixed;inset:0;opacity:.12;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:58px 58px;mask-image:linear-gradient(to bottom,#000 0%,transparent 90%);pointer-events:none;animation:gridMove 18s linear infinite}
+.glow{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;mix-blend-mode:screen}.glow.one{width:520px;height:520px;top:-300px;right:-180px;background:rgba(124,92,255,.2);animation:float 8s ease-in-out infinite}.glow.two{width:430px;height:430px;bottom:-270px;left:-180px;background:rgba(99,215,255,.1);animation:float 10s -3s ease-in-out infinite}
+.storm{position:fixed;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(105deg,transparent 0 90px,rgba(180,200,255,.025) 92px,transparent 95px 180px);animation:stormMove 7s linear infinite}
+.page{position:relative;width:min(920px,calc(100% - 32px));padding:42px 22px;text-align:center;animation:pageIn .8s cubic-bezier(.16,1,.3,1) both}
+.brand{display:inline-flex;align-items:baseline;gap:9px;color:var(--text);text-decoration:none;margin-bottom:32px;animation:drop .7s .05s both}.brand-mark{font-size:27px;font-weight:1000;letter-spacing:-.08em}.brand-subtitle{font-size:10px;color:var(--muted);font-weight:850;letter-spacing:.04em}
+.signal{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(99,215,255,.18);border-radius:999px;background:rgba(99,215,255,.045);color:#9ee7ff;font-size:9px;font-weight:950;letter-spacing:.14em;text-transform:uppercase;animation:fadeUp .65s .18s both}.signal i{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 16px var(--cyan);animation:pulse 1.7s ease-in-out infinite}
+.code{margin:25px auto 0;font-size:clamp(105px,21vw,205px);line-height:.76;letter-spacing:-.1em;font-weight:1000;color:transparent;background:linear-gradient(135deg,#fff 0%,#ded7ff 25%,var(--purple2) 52%,var(--purple) 100%);background-clip:text;-webkit-background-clip:text;filter:drop-shadow(0 28px 55px rgba(124,92,255,.2));animation:codeIn 1s cubic-bezier(.16,1,.3,1) both;user-select:none}.code span{display:inline-block;animation:bob 4.5s ease-in-out infinite}.code span:nth-child(2){animation-delay:-1.5s}.code span:nth-child(3){animation-delay:-3s}
+h1{margin-top:28px;font-size:clamp(31px,5vw,54px);line-height:1;letter-spacing:-.06em;font-weight:950;animation:fadeUp .7s .38s both}.quote{margin:18px auto 0;font-size:clamp(15px,2vw,18px);font-weight:800;color:#d9dcff;animation:fadeUp .7s .45s both}.quote em{color:var(--purple2);font-style:normal}.description{max-width:590px;margin:13px auto 0;color:var(--muted);font-size:14px;line-height:1.75;animation:fadeUp .7s .52s both}
+.path{display:inline-block;max-width:min(90vw,650px);margin-top:17px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.028);color:var(--dim);font:11px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:fadeUp .7s .59s both}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:27px;animation:fadeUp .7s .66s both}.button{position:relative;min-height:47px;padding:0 19px;border-radius:12px;border:1px solid var(--line);background:rgba(20,21,29,.82);color:var(--text);font-size:13px;font-weight:900;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s,background .25s;overflow:hidden}.button:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.12) 50%,transparent 75%);transform:translateX(-120%);transition:transform .6s}.button:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.2);background:#191a23;box-shadow:0 14px 35px rgba(0,0,0,.25)}.button:hover:before{transform:translateX(120%)}.button.primary{border-color:transparent;background:linear-gradient(135deg,#876cff,#6847ef);box-shadow:0 12px 35px rgba(124,92,255,.23)}.button.primary:hover{box-shadow:0 18px 45px rgba(124,92,255,.34)}
+.hint{margin-top:32px;color:var(--dim);font-size:10px;letter-spacing:.04em;animation:fadeUp .7s .73s both}.hint b{color:#9299aa}.corner{position:fixed;bottom:20px;right:24px;color:rgba(255,255,255,.2);font:9px ui-monospace,monospace;letter-spacing:.08em;animation:fadeIn 1.2s 1s both}
+@keyframes pageIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}@keyframes codeIn{from{opacity:0;transform:translateY(35px) scale(.88);filter:blur(14px)}to{opacity:1;transform:none;filter:blur(0)}}@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}@keyframes drop{from{opacity:0;transform:translateY(-13px)}to{opacity:1;transform:none}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}@keyframes float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,24px,0)}}@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-1deg)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes gridMove{to{background-position:58px 58px}}@keyframes stormMove{from{transform:translateX(-120px)}to{transform:translateX(120px)}}
+@media(max-width:600px){.page{padding:30px 8px}.brand{margin-bottom:26px}.description{font-size:13.5px}.path{max-width:calc(100vw - 55px)}.corner{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
-  <div class="grid"></div><div class="glow one"></div><div class="glow two"></div>
-  <main class="page">
-    <a class="brand" href="/" aria-label="DFNS home"><span class="brand-mark">DFNS</span><span class="brand-subtitle">Daily Fortnite Shop</span></a>
-    <div class="code" aria-hidden="true">404</div>
-    <div class="eyebrow"><span class="dot"></span> PAGE NOT FOUND</div>
-    <h1>This page doesn't exist.</h1>
-    <p class="description">Looks like you've wandered somewhere that DFNS hasn't mapped yet. The page may have been removed, moved, or the URL might be incorrect.</p>
-    <code class="path" id="requested-path"></code>
-    <div class="actions"><a class="button primary" href="/">← Back to DFNS</a><a class="button" href="/shop.html">View Item Shop →</a></div>
-    <p class="hint">DFNS — Daily Fortnite Shop · Unofficial fan project</p>
-  </main>
-  <script>document.getElementById('requested-path').textContent=window.location.pathname+window.location.search;</script>
+<div class="grid"></div><div class="glow one"></div><div class="glow two"></div><div class="storm"></div>
+<main class="page">
+<a class="brand" href="/" aria-label="DFNS home"><span class="brand-mark">DFNS</span><span class="brand-subtitle">Daily Fortnite Shop</span></a>
+<div class="signal"><i></i> Storm signal lost</div>
+<div class="code" aria-hidden="true"><span>4</span><span>0</span><span>4</span></div>
+<h1>Hey, you got lost in the storm.</h1>
+<p class="quote"><em>This page doesn't exist.</em> But don't worry — the island is still out there.</p>
+<p class="description">The URL you're looking for may have been removed, moved, or simply never existed. Head back to DFNS and get back to today's Item Shop.</p>
+<code class="path" id="requested-path"></code>
+<div class="actions"><a class="button primary" href="/">← Back to DFNS</a><a class="button" href="/shop.html">Open Item Shop →</a></div>
+<p class="hint">DFNS — Daily Fortnite Shop · <b>Unofficial fan project</b></p>
+</main>
+<div class="corner">ERROR 404 · SIGNAL LOST</div>
+<script>document.getElementById('requested-path').textContent=window.location.pathname+window.location.search;</script>
 </body>
 </html>
