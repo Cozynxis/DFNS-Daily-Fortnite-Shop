@@ -1,171 +1,149 @@
-/* DFNS — authoritative cosmetic timeline + price repair
-   This file only repairs Last Seen / V-Bucks after item.js has loaded.
-   It does not touch favorites, notifications, navigation or the rest of the UI. */
+/* DFNS — authoritative item history + historical V-Bucks repair
+   This file is intentionally isolated from favorites, auth, notifications and navigation.
+*/
 "use strict";
 
-(async function () {
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+(() => {
   const API = "https://fortnite-api.com/v2";
+  const RAW_HISTORY = "https://raw.githubusercontent.com/Fortnite-Datamining/Fortnite-Datamining/history/shop";
 
-  let tries = 0;
-  while (!window.DFNSItem?.item?.id && tries++ < 200) await sleep(100);
-  const item = window.DFNSItem;
-  if (!item?.item?.id) return;
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-  const id = String(item.item.id);
+  async function getJson(url) {
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  }
 
-  function toDate(value) {
+  function asDate(value) {
     if (value == null || value === "") return null;
     if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
     if (typeof value === "number") {
       const d = new Date(value < 10000000000 ? value * 1000 : value);
       return Number.isNaN(d.getTime()) ? null : d;
     }
+    if (typeof value === "object") return asDate(value.timestamp ?? value.date ?? value.value ?? value.datetime);
     const d = new Date(value);
     return Number.isNaN(d.getTime()) ? null : d;
   }
 
-  function dateText(date) {
-    if (!date) return null;
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  function day(d) {
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
   }
 
-  function relative(date) {
-    const now = new Date();
-    const a = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-    const b = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-    const days = Math.max(0, Math.floor((a - b) / 86400000));
-    return days === 0 ? "today" : days === 1 ? "1 day ago" : `${days} days ago`;
-  }
-
-  function setText(selector, value) {
-    const el = document.querySelector(selector);
-    if (el) el.textContent = value;
-  }
-
-  function priceFromObject(obj) {
-    if (!obj || typeof obj !== "object") return null;
+  function price(value) {
+    if (!value || typeof value !== "object") return null;
     for (const key of ["finalPrice", "regularPrice", "price", "vbucks", "vBucks", "cost"]) {
-      const n = Number(obj[key]);
+      const n = Number(value[key]);
       if (Number.isFinite(n) && n >= 0) return n;
     }
     return null;
   }
 
-  async function json(url) {
-    const r = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" } });
-    if (!r.ok) throw new Error(`${r.status} ${url}`);
-    return r.json();
+  function historyFrom(item) {
+    const values = [];
+    const add = value => {
+      const d = asDate(value);
+      if (d) values.push(d);
+    };
+    for (const key of ["shopHistory", "shop_history"]) {
+      if (Array.isArray(item?.[key])) item[key].forEach(add);
+    }
+    add(item?.lastAppearance);
+    add(item?.last_appearance);
+    return [...new Map(values.map(d => [day(d), d])).values()].sort((a, b) => b - a);
   }
 
-  /* The shop-history response flag is required by Fortnite-API. Without it
-     shopHistory is intentionally returned as an empty array. */
-  async function loadOfficialHistory() {
+  async function authoritativeCosmetic(id) {
+    const encoded = encodeURIComponent(id);
     const urls = [
-      `${API}/cosmetics/br/${encodeURIComponent(id)}?language=en&responseFlags=4`,
-      `${API}/cosmetics/br/search/ids?language=en&responseFlags=4&id=${encodeURIComponent(id)}`,
-      `${API}/cosmetics/br/search/all?language=en&searchLanguage=en&matchMethod=full&responseFlags=4&id=${encodeURIComponent(id)}`
+      `${API}/cosmetics/br/search?language=en&searchLanguage=en&matchMethod=full&id=${encoded}&responseFlags=4`,
+      `${API}/cosmetics/br/search/all?language=en&searchLanguage=en&matchMethod=full&id=${encoded}&responseFlags=4`,
+      `${API}/cosmetics/br/${encoded}?language=en&responseFlags=4`,
+      `${API}/cosmetics/br/search/ids?language=en&id=${encoded}&responseFlags=4`
     ];
 
     for (const url of urls) {
       try {
-        const payload = await json(url);
-        const data = Array.isArray(payload?.data) ? payload.data : (payload?.data ? [payload.data] : []);
-        const found = data.find(x => String(x?.id || "").toLowerCase() === id.toLowerCase()) || data[0];
-        if (!found) continue;
-
-        const history = Array.isArray(found.shopHistory) ? found.shopHistory : [];
-        const dates = history.map(toDate).filter(Boolean).sort((a, b) => b - a);
-        const last = dates[0] || toDate(found.lastAppearance);
-        if (last) {
-          const text = `${dateText(last)} · ${relative(last)}`;
-          setText("#item-last-seen-date", text);
-          setText("#detail-last-seen", text);
-          setText("#availability-date", `Last seen ${dateText(last)}`);
-          setText("#availability-text", "Previously available in the Item Shop");
-        }
-        return { found, last, history: dates };
-      } catch (e) {
-        console.warn("DFNS official history source failed:", e);
+        const json = await getJson(url);
+        const raw = Array.isArray(json?.data) ? json.data : (json?.data ? [json.data] : []);
+        const exact = raw.find(x => String(x?.id || "").toLowerCase() === String(id).toLowerCase());
+        if (exact) return exact;
+        if (raw[0]) return raw[0];
+      } catch (error) {
+        console.warn("DFNS authoritative cosmetic request failed:", error);
       }
     }
     return null;
   }
 
-  /* Fortnite.GG exposes a compact public ID map. Its cosmetic pages contain
-     the canonical displayed V-Bucks price and Last Seen value. We use this
-     only as a fallback for historical price data because the public
-     fortnite-api.com shop endpoint only contains today's prices. */
-  async function loadFortniteGG() {
+  async function historicalPrice(id, name, dates) {
+    const candidates = dates.slice(0, 12);
+    for (const date of candidates) {
+      const url = `${RAW_HISTORY}/${day(date)}.json`;
+      try {
+        const json = await getJson(url);
+        const entries = Array.isArray(json?.data?.entries) ? json.data.entries : [];
+        for (const entry of entries) {
+          const items = Array.isArray(entry?.brItems) ? entry.brItems : [];
+          const exact = items.find(x => String(x?.id || "").toLowerCase() === String(id).toLowerCase());
+          if (exact || (name && items.some(x => String(x?.name || "").toLowerCase() === String(name).toLowerCase()))) {
+            const p = price(entry);
+            if (p != null) return { value: p, date };
+          }
+        }
+      } catch (error) {
+        // A missing snapshot is normal for dates before the archive started.
+        console.debug("DFNS historical shop snapshot unavailable:", day(date), error);
+      }
+    }
+    return null;
+  }
+
+  async function repair() {
+    let tries = 0;
+    while ((!window.DFNSItem || !window.DFNSItem.item?.id) && tries++ < 300) await sleep(50);
+    const state = window.DFNSItem;
+    if (!state?.item?.id) return;
+
+    const id = String(state.item.id);
     try {
-      const map = await json("https://fortnite.gg/api/items.json");
-      const numericId = map?.[id] ?? map?.[id.toLowerCase()];
-      if (numericId == null) return null;
+      // Re-fetch with INCLUDE_SHOP_HISTORY. The normal cosmetic request does not
+      // include shop history by default, which is why the old page was intermittent.
+      const authoritative = await authoritativeCosmetic(id);
+      if (authoritative) state.item = { ...state.item, ...authoritative };
 
-      const urls = [
-        `https://fortnite.gg/cosmetics?id=${encodeURIComponent(numericId)}`,
-        `https://r.jina.ai/https://fortnite.gg/cosmetics?id=${encodeURIComponent(numericId)}`
-      ];
-
-      for (const url of urls) {
-        try {
-          const response = await fetch(url, { cache: "no-store" });
-          if (!response.ok) continue;
-          const text = await response.text();
-          if (!text) continue;
-
-          const priceMatch = text.match(/V-?Bucks\s*[:|]?\s*([0-9][0-9,]*)/i);
-          const lastMatch = text.match(/Last seen\s*[:|]?\s*([A-Z][a-z]+\s+\d{1,2},\s+\d{4})/i);
-
-          const price = priceMatch ? Number(priceMatch[1].replace(/,/g, "")) : null;
-          const last = lastMatch ? toDate(lastMatch[1]) : null;
-
-          if (price != null) {
-            setText("#item-price", price.toLocaleString());
-            setText("#detail-shop-status", "Shop item");
-            setText("#availability-text", "Previously available in the Item Shop");
-          }
-          if (last) {
-            const textValue = `${dateText(last)} · ${relative(last)}`;
-            setText("#item-last-seen-date", textValue);
-            setText("#detail-last-seen", textValue);
-            setText("#availability-date", `Last seen ${dateText(last)}`);
-          }
-          if (price != null || last) return { price, last };
-        } catch (e) {
-          console.warn("DFNS Fortnite.GG source failed:", e);
-        }
+      const dates = historyFrom(state.item);
+      if (dates.length) {
+        state.historyRecord = {
+          firstSeen: asDate(state.item.added) || dates[dates.length - 1],
+          lastSeen: dates[0],
+          appearances: dates
+        };
       }
-    } catch (e) {
-      console.warn("DFNS Fortnite.GG ID map failed:", e);
+
+      // Current shop price is still handled by item.js. If it is not in today's
+      // shop, resolve the exact price from the snapshot of its last appearance.
+      if (state.historicalPrice == null && !state.shopEntry && dates.length) {
+        const historical = await historicalPrice(id, state.item.name, dates);
+        if (historical) state.historicalPrice = historical.value;
+      }
+
+      state.render?.();
+      console.info("DFNS item data repaired", {
+        id,
+        lastSeen: state.historyRecord?.lastSeen || null,
+        price: state.historicalPrice
+      });
+    } catch (error) {
+      console.error("DFNS item repair failed:", error);
+      // Never break the rest of the item page because history/price is optional.
+      try { state.render?.(); } catch {}
     }
-    return null;
   }
 
-  try {
-    const official = await loadOfficialHistory();
-
-    // First repair Last Seen from the official response flag.
-    if (!official?.last) {
-      const direct = toDate(item.item.lastAppearance);
-      if (direct) {
-        const text = `${dateText(direct)} · ${relative(direct)}`;
-        setText("#item-last-seen-date", text);
-        setText("#detail-last-seen", text);
-        setText("#availability-date", `Last seen ${dateText(direct)}`);
-      }
-    }
-
-    // Then repair historical price independently.
-    const currentPrice = priceFromObject(item.shopEntry) || priceFromObject(item.item);
-    if (currentPrice != null) {
-      setText("#item-price", currentPrice.toLocaleString());
-    } else {
-      await loadFortniteGG();
-    }
-
-    console.info("DFNS timeline/price repair complete:", id);
-  } catch (error) {
-    console.error("DFNS timeline/price repair failed:", error);
-  }
+  document.addEventListener("DOMContentLoaded", repair, { once: true });
 })();
