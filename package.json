@@ -1,6 +1,7 @@
 {
   "name": "dfns-daily-fortnite-shop",
   "version": "1.0.0",
+  "private": true,
   "description": "> A modern Fortnite Item Shop browser powered by the Fortnite-API.",
   "main": "index.js",
   "scripts": {
@@ -13,7 +14,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/Cozynxis/DFNS-Daily-Fortnite-Shop/issues"
   },
@@ -22,5 +23,8 @@
     "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }
