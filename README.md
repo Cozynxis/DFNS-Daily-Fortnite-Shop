@@ -16,6 +16,7 @@ The project uses the public **Fortnite-API** to retrieve Fortnite cosmetic and I
 - ↕️ Sort items by name, price and rarity
 - ❤️ Add items to your favorites
 - 💾 Save favorites locally
+- 🔥 Vote for an cosmetic
 - 🎨 Rarity-based item styling
 - 📱 Responsive design
 - ⚡ Client-side caching
