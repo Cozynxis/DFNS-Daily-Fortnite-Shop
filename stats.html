@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09090b">
+<meta name="description" content="DFNS Fortnite Stats — live estimated Fortnite player counts and trends.">
+<link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
+<title>Player Count — DFNS Stats</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ui-fixes.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/stats.css?v=20260822-1">
+</head>
+<body>
+<div class="site-wrapper">
+<header class="site-header">
+<div class="container header-container">
+<a class="brand" href="index.html"><span class="brand-mark">DFNS</span><span class="brand-subtitle">Daily Fortnite Shop</span></a>
+<nav class="main-navigation" id="main-navigation" aria-label="Main navigation">
+<a class="nav-link" href="index.html">Home</a><a class="nav-link" href="shop.html">Item Shop</a><button class="nav-link nav-button" type="button">Cosmetics</button>
+<div class="dfns-stats-nav"><button class="nav-link nav-button dfns-stats-trigger active" type="button" aria-expanded="false" aria-haspopup="true">Stats <span class="dfns-nav-chevron">⌄</span></button><div class="dfns-stats-menu" role="menu"><a href="stats.html" role="menuitem"><span class="dfns-menu-icon">◉</span><span><strong>PlayerCount</strong><small>Live Fortnite player stats</small></span></a></div></div>
+</nav>
+<div class="header-actions"><button class="header-search-button" type="button" data-search-trigger aria-label="Search cosmetics">⌕</button><button class="mobile-menu-button" type="button" data-mobile-menu aria-expanded="false" aria-controls="main-navigation" aria-label="Open navigation">☰</button></div>
+</div>
+</header>
+<main class="stats-page">
+<section class="stats-hero"><div class="stats-hero-glow"></div><div class="stats-grid-bg"></div><div class="container stats-hero-inner"><div><div class="hero-badge"><span class="status-dot"></span> LIVE FORTNITE STATS</div><h1 class="stats-title">PLAYER<span>COUNT</span></h1><p class="stats-description">See an estimated live view of Fortnite's global player activity, with a lightweight trend graph that keeps building as you watch.</p></div><div class="stats-live-pill"><span class="stats-live-dot"></span><span>UPDATING LIVE</span><strong id="last-updated">Waiting...</strong></div></div></section>
+<section class="stats-content"><div class="container">
+<div class="stats-disclaimer"><span>ⓘ</span><p>Player counts are approximate and come from public third-party Fortnite tracking data. DFNS does not claim these numbers are official Epic Games figures.</p></div>
+<div class="player-stat-grid">
+<article class="player-stat-card online"><div class="player-stat-top"><span>ONLINE NOW</span><span class="player-stat-icon">●</span></div><strong id="online-count">—</strong><p>Estimated players currently online</p><div class="stat-spark" id="online-spark"></div></article>
+<article class="player-stat-card match"><div class="player-stat-top"><span>IN-MATCH NOW</span><span class="player-stat-icon">⚡</span></div><strong id="match-count">—</strong><p>Estimated players currently in matches</p><div class="stat-spark" id="match-spark"></div></article>
+<article class="player-stat-card ratio"><div class="player-stat-top"><span>IN-MATCH SHARE</span><span class="player-stat-icon">%</span></div><strong id="match-ratio">—</strong><p>Share of online players in matches</p><div class="ratio-track"><span id="ratio-bar"></span></div></article>
+</div>
+<div class="stats-panel"><div class="stats-panel-head"><div><span class="section-eyebrow">PLAYER TRENDS</span><h2>Fortnite Player Activity</h2><p>DFNS records a snapshot roughly every minute while this page is open.</p></div><div class="chart-controls"><div class="metric-toggle"><button class="active" data-metric="online">Online</button><button data-metric="match">In-Match</button><button data-metric="both">Both</button></div><div class="range-toggle"><button class="active" data-range="1h">1H</button><button data-range="6h">6H</button><button data-range="24h">1D</button><button data-range="7d">1W</button></div></div></div><div class="chart-wrap"><svg id="player-chart" viewBox="0 0 1000 390" preserveAspectRatio="none" role="img" aria-label="Fortnite player count chart"></svg><div class="chart-tooltip" id="chart-tooltip" hidden></div><div class="chart-empty" id="chart-empty">Collecting live data…</div></div><div class="chart-footer"><span id="chart-range-label">Last hour</span><span id="point-count">0 snapshots</span></div></div>
+<div class="stats-info-grid"><article><span class="section-eyebrow">HOW IT WORKS</span><h3>Live-ish, without pretending it's official</h3><p>DFNS reads the public player-count tracker and refreshes it periodically. Your browser stores the snapshots locally, so the graph becomes more useful the longer you keep the page open.</p></article><article><span class="section-eyebrow">QUICK INSIGHT</span><h3 id="insight-title">Waiting for data</h3><p id="insight-text">Once a few snapshots are collected, DFNS will show whether player activity is trending up or down.</p></article></div>
+</div></section>
+</main>
+<footer class="site-footer"><div class="container footer-bottom"><p>© <span data-current-year></span> DFNS — Unofficial fan project. Not affiliated with Epic Games.</p><div class="footer-links"><p>Player counts are estimates.</p><a href="about.html" class="footer-about-link">About DFNS <span>→</span></a></div></div></footer>
+</div>
+<script src="js/app.js?v=20260820-4" defer></script><script src="js/auth.js?v=20260820-2" defer></script><script src="js/settings.js?v=20260821-1" defer></script><script src="js/playercount.js?v=20260822-1" defer></script>
+</body>
+</html>
