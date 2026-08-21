@@ -87,14 +87,22 @@ const DFNSReactions = {
   bind() { document.querySelectorAll("[data-dfns-reaction]").forEach(b => { if (!b.dataset.dfnsBound) { b.dataset.dfnsBound = "1"; b.addEventListener("click", () => this.vote(b.dataset.dfnsReaction)); } }); },
 
   compactAndMoveCard() {
-    const card = document.querySelector("#dfns-reactions"), availability = document.querySelector(".item-availability");
-    if (!card) return;
+    const card = document.querySelector("#dfns-reactions");
+    const availability = document.querySelector(".item-information .item-availability");
+    if (!card || !availability) return;
+
     const style = document.createElement("style");
-    style.textContent = `.dfns-reactions-compact{margin:10px 0 0!important;max-width:none!important;padding:10px!important;border-radius:13px!important;box-shadow:0 8px 24px rgba(0,0,0,.14)!important}.dfns-reactions-compact .dfns-reactions-head{margin-bottom:8px;align-items:center;gap:8px}.dfns-reactions-compact .dfns-reactions-title{font-size:13px}.dfns-reactions-compact .dfns-reactions-subtitle,.dfns-reactions-compact .dfns-reactions-eyebrow,.dfns-reactions-compact .dfns-reactions-backend-note,.dfns-reactions-compact .dfns-reaction-status,.dfns-reactions-compact .dfns-reaction-percentages{display:none}.dfns-reactions-compact .dfns-reaction-total{font-size:9px}.dfns-reactions-compact .dfns-reaction-buttons{grid-template-columns:1fr 1fr;gap:7px}.dfns-reactions-compact .dfns-reaction-button{padding:7px 9px;border-radius:10px;gap:6px}.dfns-reactions-compact .dfns-reaction-emoji{font-size:18px}.dfns-reactions-compact .dfns-reaction-main{gap:6px}.dfns-reactions-compact .dfns-reaction-label strong{font-size:10px}.dfns-reactions-compact .dfns-reaction-label span{font-size:8px}.dfns-reactions-compact .dfns-reaction-count{font-size:12px}.dfns-reactions-compact .dfns-reaction-meter{height:3px;margin-top:8px}@media(max-width:620px){.dfns-reactions-compact{padding:9px!important}.dfns-reactions-compact .dfns-reaction-button{padding:8px}.dfns-reactions-compact .dfns-reactions-title{font-size:12px}}`;
+    style.textContent = `.dfns-reactions-compact{display:block!important;width:100%!important;box-sizing:border-box!important;margin:10px 0 0!important;max-width:none!important;padding:10px!important;border-radius:13px!important;box-shadow:0 8px 24px rgba(0,0,0,.14)!important}.dfns-reactions-compact .dfns-reactions-head{margin-bottom:8px;align-items:center;gap:8px}.dfns-reactions-compact .dfns-reactions-title{font-size:13px}.dfns-reactions-compact .dfns-reactions-subtitle,.dfns-reactions-compact .dfns-reactions-eyebrow,.dfns-reactions-compact .dfns-reactions-backend-note,.dfns-reactions-compact .dfns-reaction-status,.dfns-reactions-compact .dfns-reaction-percentages{display:none}.dfns-reactions-compact .dfns-reaction-total{font-size:9px}.dfns-reactions-compact .dfns-reaction-buttons{grid-template-columns:1fr 1fr;gap:7px}.dfns-reactions-compact .dfns-reaction-button{padding:7px 9px;border-radius:10px;gap:6px}.dfns-reactions-compact .dfns-reaction-emoji{font-size:18px}.dfns-reactions-compact .dfns-reaction-main{gap:6px}.dfns-reactions-compact .dfns-reaction-label strong{font-size:10px}.dfns-reactions-compact .dfns-reaction-label span{font-size:8px}.dfns-reactions-compact .dfns-reaction-count{font-size:12px}.dfns-reactions-compact .dfns-reaction-meter{height:3px;margin-top:8px}@media(max-width:620px){.dfns-reactions-compact{padding:9px!important}.dfns-reactions-compact .dfns-reaction-button{padding:8px}.dfns-reactions-compact .dfns-reactions-title{font-size:12px}}`;
     document.head.appendChild(style);
+
     card.classList.add("dfns-reactions-compact");
+    card.setAttribute("aria-label", "Community reactions");
+
+    // Put the compact reaction box immediately below the availability box,
+    // inside the same cosmetic information panel. It must never appear below Details/Stats.
+    availability.insertAdjacentElement("afterend", card);
     const section = card.closest("section.related-section");
-    if (availability?.parentElement) { availability.insertAdjacentElement("afterend", card); if (section) section.remove(); }
+    if (section) section.remove();
   },
 
   render() {
