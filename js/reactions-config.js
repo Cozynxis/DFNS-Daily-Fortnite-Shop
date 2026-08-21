@@ -4,6 +4,6 @@
  * below. The anon key is intended for browser use; NEVER put a service_role key here.
  */
 window.DFNS_REACTIONS_CONFIG = {
-  url: "",
-  anonKey: ""
+  url: "https://lzvsyivbwrbrvbtnglqs.supabase.co/rest/v1/",
+  anonKey: "sb_publishable_LrHVingIZhtkrfEAl4oigA_pgmLPCDK"
 };
