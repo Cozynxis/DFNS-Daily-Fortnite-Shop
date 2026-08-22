@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="css/auth.css">
 <link rel="stylesheet" href="css/stats.css?v=20260822-3">
 <link rel="stylesheet" href="css/countdown.css?v=20260822-2">
-<link rel="stylesheet" href="css/map.css?v=20260822-2">
+<link rel="stylesheet" href="css/map.css?v=20260822-3">
 </head>
 <body>
 <div class="site-wrapper">
@@ -30,58 +30,19 @@
 <div class="header-actions"><button class="header-search-button" type="button" data-search-trigger aria-label="Search cosmetics">⌕</button><button class="mobile-menu-button" type="button" data-mobile-menu aria-expanded="false" aria-controls="main-navigation" aria-label="Open navigation">☰</button></div>
 </div>
 </header>
-
 <main class="map-page">
-<section class="map-hero">
-<div class="map-hero-glow"></div><div class="map-hero-grid"></div>
-<div class="container map-hero-inner">
-<div><div class="hero-badge"><span class="status-dot"></span> LIVE FORTNITE MAP</div><h1 class="map-title">THE <span>ISLAND</span></h1><p class="map-description">Explore the current Battle Royale island or drop back into the Fortnite OG Season 9 island. POI data for Battle Royale is refreshed automatically from live Fortnite map data.</p></div>
-<div class="map-live-pill"><span class="map-live-dot"></span><span>LIVE DATA</span><strong id="map-updated">Loading...</strong></div>
-</div>
-</section>
-
-<section class="map-content">
-<div class="container">
+<section class="map-hero"><div class="map-hero-glow"></div><div class="map-hero-grid"></div><div class="container map-hero-inner"><div><div class="hero-badge"><span class="status-dot"></span> LIVE FORTNITE MAP</div><h1 class="map-title">THE <span>ISLAND</span></h1><p class="map-description">Explore the current Battle Royale island or the Fortnite OG Season 9 island. Battle Royale POI data refreshes automatically.</p></div><div class="map-live-pill"><span class="map-live-dot"></span><span>LIVE DATA</span><strong id="map-updated">Loading...</strong></div></div></section>
+<section class="map-content"><div class="container">
 <div class="map-mode-tabs" role="tablist" aria-label="Fortnite maps">
 <button class="map-mode-tab active" data-map-mode="br" role="tab" aria-selected="true"><span class="map-mode-logo map-br-logo">FORTNITE<strong>BATTLE ROYALE</strong></span><span><strong>Battle Royale</strong><small>Chapter 7 Season 4 · Override</small></span></button>
 <button class="map-mode-tab" data-map-mode="og" role="tab" aria-selected="false"><span class="map-mode-logo map-og-logo">FORTNITE<strong>OG</strong></span><span><strong>Fortnite OG</strong><small>Chapter 1 · Season 9</small></span></button>
 </div>
-
-<div class="map-toolbar">
-<div><span class="section-eyebrow">CURRENT ISLAND</span><h2 id="map-name">Battle Royale — Chapter 7 Season 4</h2><p id="map-subtitle">Current island map with named locations.</p></div>
-<div class="map-toolbar-actions"><button id="map-refresh" class="map-refresh" type="button"><span>↻</span> Refresh map</button></div>
-</div>
-
-<div class="map-layout">
-<div class="map-stage" id="map-stage">
-<div class="map-loading" id="map-loading"><span></span><strong>Loading island...</strong></div>
-<img id="map-image" class="map-image" alt="Fortnite Battle Royale map" draggable="false">
-<div id="poi-layer" class="poi-layer" aria-label="Named POIs"></div>
-<div class="map-vignette"></div>
-<div class="map-controls"><button type="button" id="zoom-out" aria-label="Zoom out">−</button><button type="button" id="zoom-reset" aria-label="Reset map zoom">⌂</button><button type="button" id="zoom-in" aria-label="Zoom in">+</button></div>
-<div class="map-watermark">DFNS MAP <span>•</span> LIVE</div>
-</div>
-
-<aside class="map-sidebar">
-<div class="map-sidebar-head"><div><span class="section-eyebrow">LOCATIONS</span><h3>Named POIs</h3></div><span id="poi-count" class="poi-count">—</span></div>
-<div class="poi-search"><span>⌕</span><input id="poi-search" type="search" placeholder="Search POIs..." autocomplete="off"></div>
-<div id="poi-list" class="poi-list"></div>
-<div class="map-sidebar-note"><span>ⓘ</span><p>Battle Royale POIs are pulled from the public Fortnite-API map endpoint. OG uses the current Season 9 island reference and can be switched instantly.</p></div>
-</aside>
-</div>
-
-<div class="map-info-grid"><article><span class="section-eyebrow">BATTLE ROYALE</span><h3>Chapter 7 Season 4 — Override</h3><p>The current BR island includes the new central locations and gaming-themed changes introduced with Override. The live map image and POI coordinates are refreshed automatically.</p></article><article><span class="section-eyebrow">FORTNITE OG</span><h3>Season 9 — The Future Is Yours</h3><p>OG Season 9 brings back the futuristic Chapter 1 island with Neo Tilted, Mega Mall and Pressure Plant, plus the classic island locations around them.</p></article></div>
-</div>
-</section>
-</main>
-
+<div class="map-toolbar"><div><span class="section-eyebrow">CURRENT ISLAND</span><h2 id="map-name">Battle Royale — Chapter 7 Season 4</h2><p id="map-subtitle">Live island map with named locations.</p></div><div class="map-toolbar-actions"><button id="map-refresh" class="map-refresh" type="button"><span>↻</span> Refresh map</button></div></div>
+<div class="map-layout"><div class="map-stage" id="map-stage"><div class="map-loading" id="map-loading"><span></span><strong>Loading island...</strong></div><img id="map-image" class="map-image" alt="Fortnite Battle Royale map" draggable="false"><div id="poi-layer" class="poi-layer" aria-label="Named POIs"></div><div class="map-vignette"></div><div class="map-controls"><button type="button" id="zoom-out" aria-label="Zoom out">−</button><button type="button" id="zoom-reset" aria-label="Reset map zoom">⌂</button><button type="button" id="zoom-in" aria-label="Zoom in">+</button></div><div class="map-watermark">DFNS MAP <span>•</span> LIVE</div></div>
+<aside class="map-sidebar"><div class="map-sidebar-head"><div><span class="section-eyebrow">LOCATIONS</span><h3>Named POIs</h3></div><span id="poi-count" class="poi-count">—</span></div><div class="poi-search"><span>⌕</span><input id="poi-search" type="search" placeholder="Search POIs..." autocomplete="off"></div><div id="poi-list" class="poi-list"></div><div class="map-sidebar-note"><span>ⓘ</span><p>Battle Royale POIs are pulled from the public Fortnite-API map endpoint. OG uses the Season 9 island reference.</p></div></aside></div>
+<div class="map-info-grid"><article><span class="section-eyebrow">BATTLE ROYALE</span><h3>Chapter 7 Season 4 — Override</h3><p>The current BR island and named POIs are refreshed automatically from live map data.</p></article><article><span class="section-eyebrow">FORTNITE OG</span><h3>Season 9 — The Future Is Yours</h3><p>OG Season 9 brings back the futuristic Chapter 1 island with Neo Tilted, Mega Mall and Pressure Plant.</p></article></div>
+</div></section></main>
 <footer class="site-footer"><div class="container footer-bottom"><p>© <span data-current-year></span> DFNS — Daily Fortnite Shop</p><div class="footer-links"><p>Unofficial fan project. Not affiliated with Epic Games.</p><a href="about.html" class="footer-about-link">About DFNS <span>→</span></a></div></div></footer>
 </div>
-<script src="js/app.js?v=20260820-4" defer></script>
-<script src="js/auth.js?v=20260820-2" defer></script>
-<script src="js/settings.js?v=20260821-1" defer></script>
-<script src="js/stats-nav.js?v=20260822-1" defer></script>
-<script src="js/extra-nav-v3.js?v=20260822-1" defer></script>
-<script src="js/map.js?v=20260822-2" defer></script>
-</body>
-</html>
+<script src="js/app.js?v=20260820-4" defer></script><script src="js/auth.js?v=20260820-2" defer></script><script src="js/settings.js?v=20260821-1" defer></script><script src="js/stats-nav.js?v=20260822-1" defer></script><script src="js/extra-nav-v3.js?v=20260822-1" defer></script><script src="js/map.js?v=20260822-4" defer></script>
+</body></html>
